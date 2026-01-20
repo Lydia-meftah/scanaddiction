@@ -1,0 +1,59 @@
+[
+  {
+    "id": "echoes-of-night",
+    "title": "Echoes of Night",
+    "type": "manhwa",
+    "status": "ongoing",
+    "tags": ["mystère", "psychologique", "drama"],
+    "ratingAvg": 4.6,
+    "ratingCount": 128,
+    "synopsis": "Une série d'événements étranges force une étudiante à revisiter des souvenirs qu'elle avait enterrés.",
+    "cover": "/assets/img/placeholder-cover.jpg",
+    "chapters": [
+      {
+        "id": "ch-1",
+        "title": "Chapitre 1",
+        "number": 1,
+        "date": "2026-01-01",
+        "pages": [
+          "/assets/img/placeholder-page.jpg",
+          "/assets/img/placeholder-page.jpg",
+          "/assets/img/placeholder-page.jpg"
+        ]
+      },
+      {
+        "id": "ch-2",
+        "title": "Chapitre 2",
+        "number": 2,
+        "date": "2026-01-08",
+        "pages": [
+          "/assets/img/placeholder-page.jpg",
+          "/assets/img/placeholder-page.jpg"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "glass-garden",
+    "title": "Glass Garden",
+    "type": "webtoon",
+    "status": "hiatus",
+    "tags": ["romance", "slice of life"],
+    "ratingAvg": 4.2,
+    "ratingCount": 54,
+    "synopsis": "Une relation douce-amère se construit loin des clichés habituels.",
+    "cover": "/assets/img/placeholder-cover.jpg",
+    "chapters": [
+      {
+        "id": "ch-1",
+        "title": "Chapitre 1",
+        "number": 1,
+        "date": "2026-01-03",
+        "pages": [
+          "/assets/img/placeholder-page.jpg",
+          "/assets/img/placeholder-page.jpg"
+        ]
+      }
+    ]
+  }
+]
