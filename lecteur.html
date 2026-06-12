@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lecteur — Scanaddiction</title>
+  <meta name="description" content="Lisez des manga et manhwa traduits sur Scanaddiction.">
+  <meta name="robots" content="noindex">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { background: #000; }
+    #reader-toolbar { top: 0; }
+    /* En mode lecture, masquer le footer/nav de page */
+    @media (max-width: 640px) {
+      .reader-page { max-width: 100% !important; }
+    }
+  </style>
+</head>
+<body class="bg-black text-slate-100 min-h-screen">
+
+<!-- Barre de progression lecture -->
+<div id="reader-progress-bar" style="width:0"></div>
+
+<div id="nav-placeholder"></div>
+
+<!-- Toolbar lecteur (remplie par lecteur.js) -->
+<div id="reader-toolbar" class="sticky top-0 z-40 bg-[#080810]/96 backdrop-blur-md border-b border-[#1e1e35]">
+  <div class="max-w-4xl mx-auto px-4 py-3 flex items-center gap-4">
+    <div class="skeleton h-8 w-full rounded-lg"></div>
+  </div>
+</div>
+
+<!-- Contenu principal -->
+<div id="reader-main" class="page-enter">
+  <!-- Pages -->
+  <div id="reader-pages" class="flex flex-col items-center bg-black">
+    <!-- Rempli par lecteur.js -->
+    <div class="skeleton w-full max-w-3xl mx-auto" style="aspect-ratio:4/5;max-width:800px"></div>
+  </div>
+
+  <!-- Fin du chapitre + commentaires -->
+  <div id="reader-end" class="bg-[#080810]">
+    <!-- Rempli par lecteur.js -->
+  </div>
+</div>
+
+<div id="footer-placeholder"></div>
+
+<script src="/js/app.js"></script>
+<script src="/js/lecteur.js"></script>
+</body>
+</html>

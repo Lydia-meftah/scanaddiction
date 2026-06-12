@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /404.html
+
+# Pas d'indexation des pages lecteur (contenu dynamique, peu pertinent pour les moteurs)
+Disallow: /lecteur.html
+
+Sitemap: https://scanaddiction.pages.dev/sitemap.xml

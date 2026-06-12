@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalogue — Scanaddiction</title>
+  <meta name="description" content="Parcourez le catalogue complet de Scanaddiction. Filtrez par genre, type, statut. Manga et manhwa traduits en français.">
+  <meta name="robots" content="index, follow">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-[#080810] text-slate-100 min-h-screen">
+
+<div id="nav-placeholder"></div>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-10 page-enter">
+
+  <!-- En-tête -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-black text-white mb-2">Catalogue</h1>
+    <p class="text-slate-400 text-sm">Toutes nos œuvres traduites, classées et filtrables.</p>
+  </div>
+
+  <!-- Filtres -->
+  <div class="bg-[#0f0f1a] border border-[#1e1e35] rounded-2xl p-5 mb-8">
+    <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
+      <!-- Recherche -->
+      <div class="relative flex-1 min-w-[200px]">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="search-input" class="form-input pl-9" placeholder="Rechercher par titre, auteur, genre…" type="search">
+      </div>
+
+      <select id="filtre-genre" class="form-input sm:w-36">
+        <option value="">Tous genres</option>
+      </select>
+
+      <select id="filtre-type" class="form-input sm:w-32">
+        <option value="">Type</option>
+        <option value="manga">Manga</option>
+        <option value="manhwa">Manhwa</option>
+        <option value="manhua">Manhua</option>
+        <option value="webtoon">Webtoon</option>
+      </select>
+
+      <select id="filtre-statut" class="form-input sm:w-32">
+        <option value="">Statut</option>
+        <option value="en cours">En cours</option>
+        <option value="terminé">Terminé</option>
+        <option value="pause">En pause</option>
+      </select>
+
+      <select id="filtre-ordre" class="form-input sm:w-36">
+        <option value="note">Mieux notés</option>
+        <option value="vues">Plus vus</option>
+        <option value="favoris">Plus aimés</option>
+        <option value="recent">Récemment mis à jour</option>
+        <option value="az">A → Z</option>
+      </select>
+
+      <button id="btn-reset-filtres" class="px-4 py-2 border border-[#2a2a45] hover:border-purple-600 text-slate-400 hover:text-white rounded-lg text-sm transition-colors shrink-0">
+        Réinitialiser
+      </button>
+    </div>
+    <p class="text-xs text-slate-600 mt-3" id="result-count">Chargement…</p>
+  </div>
+
+  <!-- Grille -->
+  <div id="catalogue-grid" class="catalogue-grid">
+    <!-- Skeletons -->
+    <div class="skeleton rounded-xl" style="aspect-ratio:5/7"></div>
+    <div class="skeleton rounded-xl" style="aspect-ratio:5/7"></div>
+    <div class="skeleton rounded-xl" style="aspect-ratio:5/7"></div>
+    <div class="skeleton rounded-xl" style="aspect-ratio:5/7"></div>
+    <div class="skeleton rounded-xl" style="aspect-ratio:5/7"></div>
+    <div class="skeleton rounded-xl" style="aspect-ratio:5/7"></div>
+  </div>
+
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="/js/app.js"></script>
+<script src="/js/catalogue.js"></script>
+</body>
+</html>

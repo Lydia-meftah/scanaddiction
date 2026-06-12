@@ -1,0 +1,298 @@
+{
+  "oeuvres": [
+    {
+      "id": "kami-no-tobira",
+      "titre": "Kami no Tobira",
+      "titreFr": "La Porte des Dieux",
+      "auteur": "Hiroshi Nakamura",
+      "artiste": "Hiroshi Nakamura",
+      "type": "manga",
+      "sens": "droite-gauche",
+      "statut": "en cours",
+      "genres": [
+        "action",
+        "fantaisie",
+        "shōnen"
+      ],
+      "annee": 2021,
+      "cover": "https://placehold.co/300x420/2d1b69/a78bfa?text=Kami+no+Tobira",
+      "couleur": "2d1b69",
+      "synopsis": "Dans un Japon médiéval fantastique, les Portes des Dieux s'ouvrent tous les cent ans pour libérer des démons ancestraux. Seuls les Gardiens — humains liés à une divinité — peuvent les refermer. Kaito, un forgeron orphelin, découvre qu'il est le dernier descendant du Gardien du Soleil. Mais refermer la Porte signifie sacrifier ce qui lui est le plus cher...",
+      "note": 4.7,
+      "vues": 18420,
+      "nbFavoris": 1240,
+      "nouveau": true,
+      "featured": true,
+      "chapitres": [
+        {
+          "numero": 1,
+          "titre": "Le Forgeron Sans Passé",
+          "date": "2024-03-01",
+          "pages": 10
+        },
+        {
+          "numero": 2,
+          "titre": "La Marque du Soleil",
+          "date": "2024-03-15",
+          "pages": 10
+        },
+        {
+          "numero": 3,
+          "titre": "Le Premier Démon",
+          "date": "2024-04-01",
+          "pages": 10
+        },
+        {
+          "numero": 4,
+          "titre": "Serment de Sang",
+          "date": "2024-04-15",
+          "pages": 10
+        }
+      ]
+    },
+    {
+      "id": "kuro-shiro",
+      "titre": "Kuro to Shiro",
+      "titreFr": "Noir et Blanc",
+      "auteur": "Park Ji-young",
+      "artiste": "Park Ji-young",
+      "type": "manhwa",
+      "sens": "haut-bas",
+      "statut": "en cours",
+      "genres": [
+        "thriller",
+        "psychologique",
+        "drame"
+      ],
+      "annee": 2022,
+      "cover": "https://placehold.co/300x420/1a0a0a/f43f5e?text=Kuro+to+Shiro",
+      "couleur": "1a0a0a",
+      "synopsis": "Jung-ho est détective privé dans un Séoul nocturne où deux factions criminelles se livrent une guerre silencieuse. Quand sa sœur disparaît au cœur du conflit, il plonge dans un monde où personne n'est innocent — et où la ligne entre justice et vengeance s'efface à chaque pas.",
+      "note": 4.5,
+      "vues": 14300,
+      "nbFavoris": 920,
+      "nouveau": false,
+      "featured": true,
+      "chapitres": [
+        {
+          "numero": 1,
+          "titre": "La Nuit du Néon",
+          "date": "2024-02-10",
+          "pages": 10
+        },
+        {
+          "numero": 2,
+          "titre": "Disparition",
+          "date": "2024-02-24",
+          "pages": 10
+        },
+        {
+          "numero": 3,
+          "titre": "Les Deux Serpents",
+          "date": "2024-03-10",
+          "pages": 10
+        },
+        {
+          "numero": 4,
+          "titre": "Marché Noir",
+          "date": "2024-03-24",
+          "pages": 10
+        }
+      ]
+    },
+    {
+      "id": "umi-no-musume",
+      "titre": "Umi no Musume",
+      "titreFr": "La Fille de la Mer",
+      "auteur": "Aoi Hashimoto",
+      "artiste": "Aoi Hashimoto",
+      "type": "manga",
+      "sens": "droite-gauche",
+      "statut": "terminé",
+      "genres": [
+        "aventure",
+        "romance",
+        "seinen"
+      ],
+      "annee": 2020,
+      "cover": "https://placehold.co/300x420/0c4a6e/38bdf8?text=Umi+no+Musume",
+      "couleur": "0c4a6e",
+      "synopsis": "Nami grandit dans un village de pêcheurs isolé, croyant être humaine. Le jour de ses dix-huit ans, une tempête révèle sa véritable nature : mi-humaine, mi-esprit de l'océan. Tiraillée entre deux mondes, elle embarque pour un voyage qui la conduira au cœur même des abysses et d'une légende vieille de mille ans.",
+      "note": 4.8,
+      "vues": 21600,
+      "nbFavoris": 1680,
+      "nouveau": false,
+      "featured": false,
+      "chapitres": [
+        {
+          "numero": 1,
+          "titre": "Née de l'Écume",
+          "date": "2023-11-01",
+          "pages": 10
+        },
+        {
+          "numero": 2,
+          "titre": "L'Appel des Profondeurs",
+          "date": "2023-11-15",
+          "pages": 10
+        },
+        {
+          "numero": 3,
+          "titre": "Le Gardien des Abysses",
+          "date": "2023-12-01",
+          "pages": 10
+        },
+        {
+          "numero": 4,
+          "titre": "Entre Deux Rives",
+          "date": "2023-12-15",
+          "pages": 10
+        }
+      ]
+    },
+    {
+      "id": "tetsu-no-oni",
+      "titre": "Tetsu no Oni",
+      "titreFr": "L'Oni de Fer",
+      "auteur": "Kenji Watanabe",
+      "artiste": "Ryō Takahashi",
+      "type": "manga",
+      "sens": "droite-gauche",
+      "statut": "en cours",
+      "genres": [
+        "isekai",
+        "action",
+        "fantasy"
+      ],
+      "annee": 2023,
+      "cover": "https://placehold.co/300x420/431407/fb923c?text=Tetsu+no+Oni",
+      "couleur": "431407",
+      "synopsis": "Salaryman ordinaire, Ryu Tanaka meurt écrasé par un bus et se réveille dans un monde médiéval — à l'intérieur du corps d'un Oni de Fer, créature crainte de tous. Sans magie, sans guide, avec seulement son intelligence et sa résistance hors-norme, il devra survivre dans un monde qui le voit comme un monstre.",
+      "note": 4.3,
+      "vues": 9800,
+      "nbFavoris": 670,
+      "nouveau": true,
+      "featured": false,
+      "chapitres": [
+        {
+          "numero": 1,
+          "titre": "Réincarnation Monstrueuse",
+          "date": "2024-05-01",
+          "pages": 10
+        },
+        {
+          "numero": 2,
+          "titre": "Les Règles du Monde Sauvage",
+          "date": "2024-05-15",
+          "pages": 10
+        },
+        {
+          "numero": 3,
+          "titre": "Premier Combat",
+          "date": "2024-06-01",
+          "pages": 10
+        }
+      ]
+    },
+    {
+      "id": "hoshi-kakeru",
+      "titre": "Hoshi wo Kakeru",
+      "titreFr": "Vers les Étoiles",
+      "auteur": "Min-ji Cho",
+      "artiste": "Min-ji Cho",
+      "type": "manhwa",
+      "sens": "haut-bas",
+      "statut": "en cours",
+      "genres": [
+        "sci-fi",
+        "drame",
+        "slice of life"
+      ],
+      "annee": 2022,
+      "cover": "https://placehold.co/300x420/0f0f2e/818cf8?text=Hoshi+wo+Kakeru",
+      "couleur": "0f0f2e",
+      "synopsis": "En 2157, l'humanité colonise les étoiles mais laisse derrière elle des millions de Terrestres non qualifiés. Sora fait partie de ceux qu'on appelle les Oubliés. Mais un signal inexplicable en provenance de la Ceinture d'Astéroïdes va tout changer — pour elle, et pour toute l'humanité.",
+      "note": 4.6,
+      "vues": 16200,
+      "nbFavoris": 1100,
+      "nouveau": false,
+      "featured": true,
+      "chapitres": [
+        {
+          "numero": 1,
+          "titre": "Les Oubliés de la Terre",
+          "date": "2024-01-20",
+          "pages": 10
+        },
+        {
+          "numero": 2,
+          "titre": "Le Signal",
+          "date": "2024-02-03",
+          "pages": 10
+        },
+        {
+          "numero": 3,
+          "titre": "Mission Impossible",
+          "date": "2024-02-17",
+          "pages": 10
+        },
+        {
+          "numero": 4,
+          "titre": "Contact",
+          "date": "2024-03-02",
+          "pages": 10
+        }
+      ]
+    },
+    {
+      "id": "yoru-no-koe",
+      "titre": "Yoru no Koe",
+      "titreFr": "La Voix de la Nuit",
+      "auteur": "Takeshi Mori",
+      "artiste": "Takeshi Mori",
+      "type": "manga",
+      "sens": "droite-gauche",
+      "statut": "terminé",
+      "genres": [
+        "horreur",
+        "mystère",
+        "seinen"
+      ],
+      "annee": 2019,
+      "cover": "https://placehold.co/300x420/050510/22d3ee?text=Yoru+no+Koe",
+      "couleur": "050510",
+      "synopsis": "Chaque nuit, Hiroshi entend une voix venue du puits abandonné derrière sa maison. Une voix qui connaît ses secrets les plus intimes. Résolu à trouver une explication rationnelle, il enquête — et découvre que sa ville entière est construite sur un mensonge. Horreur psychologique, folklore japonais, trauma générationnel.",
+      "note": 4.4,
+      "vues": 11500,
+      "nbFavoris": 780,
+      "nouveau": false,
+      "featured": false,
+      "chapitres": [
+        {
+          "numero": 1,
+          "titre": "La Première Voix",
+          "date": "2023-09-10",
+          "pages": 10
+        },
+        {
+          "numero": 2,
+          "titre": "Le Puits",
+          "date": "2023-09-24",
+          "pages": 10
+        },
+        {
+          "numero": 3,
+          "titre": "Archives Municipales",
+          "date": "2023-10-08",
+          "pages": 10
+        },
+        {
+          "numero": 4,
+          "titre": "Fondations",
+          "date": "2023-10-22",
+          "pages": 10
+        }
+      ]
+    }
+  ]
+}

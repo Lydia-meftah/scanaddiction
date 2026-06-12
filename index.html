@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scanaddiction — Scantrad amateur francophone</title>
+  <meta name="description" content="Scanaddiction est une plateforme communautaire de scantrad amateur francophone. Découvrez des manga et manhwa traduits avec passion, loin des gros sites répétitifs.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Scanaddiction — Scantrad amateur francophone">
+  <meta property="og:description" content="Manga et manhwa traduits par des passionnés. Qualité avant tout.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://scanaddiction.pages.dev/">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-[#080810] text-slate-100 min-h-screen">
+
+<div id="nav-placeholder"></div>
+<div id="reader-progress-bar"></div>
+
+<!-- HERO -->
+<section class="relative overflow-hidden hero-gradient">
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/8 rounded-full blur-3xl"></div>
+    <div class="absolute top-20 right-1/4 w-64 h-64 bg-violet-600/6 rounded-full blur-3xl"></div>
+  </div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-16 pb-20 relative">
+    <div class="max-w-2xl">
+      <div class="flex items-center gap-2 mb-5">
+        <span class="px-3 py-1 bg-purple-900/40 border border-purple-800/50 text-purple-300 text-xs font-bold rounded-full uppercase tracking-wider">Scantrad amateur</span>
+        <span class="px-3 py-1 bg-emerald-900/30 border border-emerald-800/40 text-emerald-400 text-xs font-bold rounded-full">Francophone</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-black text-white leading-tight mb-5">
+        La qualité<br>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-violet-400">avant la quantité</span>
+      </h1>
+      <p class="text-lg text-slate-300 leading-relaxed mb-8 max-w-xl">
+        Des œuvres choisies avec soin, traduites avec passion. Loin des gros sites qui empilent sans âme.
+        Ici, chaque traduction compte.
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <a href="/catalogue.html" class="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-purple-900/40">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h10"/></svg>
+          Voir le catalogue
+        </a>
+        <a href="/suggestions.html" class="flex items-center gap-2 px-6 py-3 border border-[#2a2a45] hover:border-purple-600 text-slate-300 hover:text-white rounded-xl font-bold transition-colors">
+          💡 Suggérer une œuvre
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS RAPIDES -->
+<section class="border-y border-[#1e1e35] bg-[#0c0c16]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="grid grid-cols-3 sm:grid-cols-3 gap-6 text-center" id="stats-bar">
+      <div>
+        <div class="text-2xl font-black text-purple-400" id="stat-oeuvres">—</div>
+        <div class="text-xs text-slate-500 mt-0.5">œuvres</div>
+      </div>
+      <div>
+        <div class="text-2xl font-black text-purple-400" id="stat-chapitres">—</div>
+        <div class="text-xs text-slate-500 mt-0.5">chapitres</div>
+      </div>
+      <div>
+        <div class="text-2xl font-black text-purple-400">100%</div>
+        <div class="text-xs text-slate-500 mt-0.5">gratuit</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EN VEDETTE -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 pt-14">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="font-black text-xl text-white flex items-center gap-2">
+      <span class="text-purple-400">★</span> En vedette
+    </h2>
+    <a href="/catalogue.html" class="text-sm text-slate-400 hover:text-purple-400 transition-colors flex items-center gap-1">
+      Tout voir <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
+  </div>
+  <div id="featured-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <!-- JS -->
+    <div class="skeleton h-52 rounded-2xl"></div>
+    <div class="skeleton h-52 rounded-2xl"></div>
+    <div class="skeleton h-52 rounded-2xl hidden sm:block"></div>
+  </div>
+</section>
+
+<!-- NOUVELLES SORTIES -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 pt-14">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="font-black text-xl text-white flex items-center gap-2">
+      <span class="text-emerald-400">●</span> Sorties récentes
+    </h2>
+    <a href="/catalogue.html" class="text-sm text-slate-400 hover:text-purple-400 transition-colors flex items-center gap-1">
+      Tout voir <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
+  </div>
+  <div id="latest-list" class="flex flex-col gap-2">
+    <div class="skeleton h-14 rounded-xl"></div>
+    <div class="skeleton h-14 rounded-xl"></div>
+    <div class="skeleton h-14 rounded-xl"></div>
+    <div class="skeleton h-14 rounded-xl"></div>
+    <div class="skeleton h-14 rounded-xl"></div>
+  </div>
+</section>
+
+<!-- CATALOGUE COMPLET -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 pt-14">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="font-black text-xl text-white flex items-center gap-2">
+      <span class="text-blue-400">📚</span> Tout le catalogue
+    </h2>
+    <a href="/catalogue.html" class="text-sm text-slate-400 hover:text-purple-400 transition-colors flex items-center gap-1">
+      Catalogue complet <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
+  </div>
+  <div id="all-covers" class="catalogue-grid">
+    <!-- JS -->
+  </div>
+</section>
+
+<!-- BLOC COMMUNAUTÉ -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 pt-16 pb-4">
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div class="bg-[#111120] border border-[#1e1e35] rounded-2xl p-6 hover:border-purple-800/40 transition-colors">
+      <div class="text-2xl mb-3">💡</div>
+      <h3 class="font-bold text-slate-100 mb-2">Suggérez une œuvre</h3>
+      <p class="text-sm text-slate-400 mb-4">Une pépite encore non traduite ? Argumentez votre suggestion et la communauté vote !</p>
+      <a href="/suggestions.html" class="text-sm text-purple-400 hover:text-purple-300 font-semibold transition-colors">Faire une suggestion →</a>
+    </div>
+    <div class="bg-[#111120] border border-[#1e1e35] rounded-2xl p-6 hover:border-purple-800/40 transition-colors">
+      <div class="text-2xl mb-3">💬</div>
+      <h3 class="font-bold text-slate-100 mb-2">Rejoignez le Discord</h3>
+      <p class="text-sm text-slate-400 mb-4">Discussions, avant-premières, votes de traduction. La communauté vit sur Discord.</p>
+      <a href="https://discord.gg/scanaddiction" target="_blank" rel="noopener" class="text-sm text-purple-400 hover:text-purple-300 font-semibold transition-colors">Rejoindre →</a>
+    </div>
+    <div class="bg-[#111120] border border-[#1e1e35] rounded-2xl p-6 hover:border-purple-800/40 transition-colors sm:col-span-2 lg:col-span-1">
+      <div class="text-2xl mb-3">☕</div>
+      <h3 class="font-bold text-slate-100 mb-2">Soutenir le projet</h3>
+      <p class="text-sm text-slate-400 mb-4">Ce site est gratuit, sans pub. Un café sur Ko-fi aide à maintenir les serveurs et la motivation !</p>
+      <a href="/soutien.html" class="text-sm text-purple-400 hover:text-purple-300 font-semibold transition-colors">Soutenir →</a>
+    </div>
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+
+<script src="/js/app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const data = await App.getOeuvres();
+    const oeuvres = data.oeuvres || [];
+    const featured = oeuvres.filter(o => o.featured);
+    const nouveau  = oeuvres.filter(o => o.nouveau);
+
+    // Stats
+    const totalCh = oeuvres.reduce((s, o) => s + o.chapitres.length, 0);
+    document.getElementById('stat-oeuvres').textContent   = oeuvres.length;
+    document.getElementById('stat-chapitres').textContent = totalCh;
+
+    // En vedette — grande carte horizontale
+    const featuredGrid = document.getElementById('featured-grid');
+    if (featuredGrid) {
+      featuredGrid.innerHTML = featured.slice(0, 3).map(o => {
+        const lastChap = o.chapitres[o.chapitres.length - 1];
+        return `
+<a href="/oeuvre.html?id=${o.id}" class="group relative rounded-2xl overflow-hidden border border-[#1e1e35] hover:border-purple-800/50 transition-all bg-[#111120] flex flex-col sm:flex-row gap-0">
+  <div class="shrink-0 w-full sm:w-32 bg-[#${o.couleur||'1e1e35'}]">
+    <img src="${o.cover}" alt="${o.titre}" class="w-full h-40 sm:h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
+  </div>
+  <div class="p-4 flex flex-col gap-2 justify-center min-w-0">
+    <div class="flex gap-1.5 flex-wrap">
+      ${App.typeBadge(o.type)}
+      ${App.statutBadge(o.statut)}
+    </div>
+    <p class="font-bold text-slate-100 group-hover:text-white transition-colors line-clamp-1">${o.titre}</p>
+    ${o.titreFr ? `<p class="text-xs text-slate-500">${o.titreFr}</p>` : ''}
+    <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">${o.synopsis.slice(0,120)}…</p>
+    <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+      <span>${App.starHTML(o.note)} ${o.note}</span>
+      ${lastChap ? `<span>Ch.${lastChap.numero} · ${App.formatDate(lastChap.date)}</span>` : ''}
+    </div>
+  </div>
+</a>`;
+      }).join('') || '<p class="text-slate-500 col-span-full">Aucune œuvre en vedette.</p>';
+    }
+
+    // Sorties récentes — liste compacte (tous chapitres récents triés)
+    const latestList = document.getElementById('latest-list');
+    if (latestList) {
+      const entries = [];
+      oeuvres.forEach(o => {
+        o.chapitres.forEach(ch => {
+          entries.push({ o, ch });
+        });
+      });
+      entries.sort((a,b) => b.ch.date.localeCompare(a.ch.date));
+      latestList.innerHTML = entries.slice(0, 8).map(({ o, ch }) => `
+<a href="/lecteur.html?id=${o.id}&ch=${ch.numero}"
+   class="flex items-center gap-4 px-4 py-3 bg-[#111120] hover:bg-[#161628] border border-[#1e1e35] hover:border-purple-800/40 rounded-xl transition-all group">
+  <img src="${o.cover}" alt="${o.titre}" class="w-10 h-14 object-cover rounded-lg border border-[#2a2a45] shrink-0">
+  <div class="flex-1 min-w-0">
+    <p class="font-semibold text-sm text-slate-200 group-hover:text-white truncate">${o.titre}</p>
+    <p class="text-xs text-slate-500">Ch.${ch.numero} · ${ch.titre}</p>
+  </div>
+  <div class="text-right shrink-0">
+    <p class="text-xs text-slate-500">${App.formatDate(ch.date)}</p>
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="ml-auto mt-1 text-slate-600 group-hover:text-purple-400 transition-colors"><path d="M9 18l6-6-6-6"/></svg>
+  </div>
+</a>`).join('');
+    }
+
+    // Tout le catalogue (covers)
+    const allCovers = document.getElementById('all-covers');
+    if (allCovers) {
+      allCovers.innerHTML = oeuvres.map(o => `
+<a href="/oeuvre.html?id=${o.id}" class="card-oeuvre group flex flex-col">
+  <div class="relative overflow-hidden" style="aspect-ratio:5/7">
+    <img src="${o.cover}" alt="${o.titre}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+         onerror="this.style.background='#${o.couleur||'1e1e35'}';this.src=''">
+    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+    ${o.nouveau ? '<div class="absolute top-2 left-2 px-1.5 py-0.5 bg-purple-600 text-white text-[10px] font-bold rounded">NOUVEAU</div>' : ''}
+  </div>
+  <div class="p-3">
+    <p class="font-bold text-xs text-slate-100 line-clamp-2 mb-1">${o.titre}</p>
+    <div class="flex gap-1.5">${App.typeBadge(o.type)}${App.statutBadge(o.statut)}</div>
+  </div>
+</a>`).join('');
+    }
+
+  } catch(e) {
+    console.error(e);
+  }
+});
+</script>
+</body>
+</html>

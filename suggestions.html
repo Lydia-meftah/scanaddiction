@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suggestions d'œuvres — Scanaddiction</title>
+  <meta name="description" content="Proposez une œuvre à traduire sur Scanaddiction. Argumentez votre suggestion et rejoignez le vote communautaire.">
+  <meta name="robots" content="index, follow">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-[#080810] text-slate-100 min-h-screen">
+
+<div id="nav-placeholder"></div>
+
+<main class="max-w-3xl mx-auto px-4 sm:px-6 py-10 page-enter">
+
+  <!-- En-tête -->
+  <div class="mb-10 text-center">
+    <div class="text-4xl mb-4">💡</div>
+    <h1 class="text-3xl font-black text-white mb-3">Suggestions d'œuvres</h1>
+    <p class="text-slate-400 leading-relaxed max-w-lg mx-auto">
+      Une pépite non traduite qui mérite d'être connue ?
+      Remplissez le formulaire ci-dessous. Les meilleures suggestions sont discutées sur le Discord.
+    </p>
+  </div>
+
+  <!-- Info -->
+  <div class="bg-purple-900/20 border border-purple-800/40 rounded-2xl p-5 mb-8 flex gap-4">
+    <div class="text-purple-400 text-xl shrink-0 mt-0.5">ℹ</div>
+    <div class="text-sm text-slate-300 leading-relaxed">
+      <p class="font-semibold text-purple-300 mb-1">Comment ça marche ?</p>
+      <p>Soumettez votre suggestion. Elle apparaîtra dans la liste ci-dessous avec le statut <em>En attente</em>.
+      Les suggestions retenues sont traduites en priorité. Un vote final est organisé sur le <a href="https://discord.gg/scanaddiction" target="_blank" rel="noopener" class="text-purple-400 underline underline-offset-2">Discord</a>.</p>
+    </div>
+  </div>
+
+  <!-- Formulaire -->
+  <section class="bg-[#0f0f1a] border border-[#1e1e35] rounded-2xl p-6 mb-12">
+    <h2 class="font-bold text-lg text-slate-100 mb-5">Proposer une œuvre</h2>
+    <form id="suggestion-form" class="flex flex-col gap-4" novalidate>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-sm font-semibold text-slate-300">Titre de l'œuvre <span class="text-red-400">*</span></label>
+          <input id="sug-titre" class="form-input" placeholder="Ex : Dungeon Meshi" maxlength="100" required>
+          <p class="text-xs text-slate-600">Titre original de préférence</p>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-sm font-semibold text-slate-300">Auteur</label>
+          <input id="sug-auteur" class="form-input" placeholder="Ex : Ryoko Kui" maxlength="80">
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-sm font-semibold text-slate-300">Type</label>
+          <select id="sug-type" class="form-input">
+            <option value="">Non précisé</option>
+            <option value="manga">Manga</option>
+            <option value="manhwa">Manhwa</option>
+            <option value="manhua">Manhua</option>
+            <option value="webtoon">Webtoon</option>
+            <option value="autre">Autre</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-sm font-semibold text-slate-300">Votre pseudo</label>
+          <input id="sug-pseudo" class="form-input" placeholder="Anonyme" maxlength="30">
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-semibold text-slate-300">
+          Pourquoi cette œuvre mérite d'être traduite ? <span class="text-red-400">*</span>
+        </label>
+        <textarea id="sug-raison" class="form-input resize-none" rows="4" maxlength="800"
+                  placeholder="Décrivez l'œuvre, ce qui la rend unique, pourquoi elle manque dans le paysage francophone… (min. 30 caractères)"></textarea>
+        <div class="flex justify-between items-center">
+          <p class="text-xs text-slate-600">Minimum 30 caractères. Plus vous argumentez, plus la suggestion a de chances d'être retenue.</p>
+          <span class="text-xs text-slate-600" id="raison-count">0/800</span>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button type="submit"
+                class="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-colors">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4z"/></svg>
+          Envoyer la suggestion
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Liste des suggestions -->
+  <section>
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="font-bold text-lg text-slate-100">
+        Suggestions communautaires
+        <span class="text-slate-500 text-sm font-normal ml-1.5" id="sug-count"></span>
+      </h2>
+      <select id="filtre-statut-sug" class="form-input text-xs py-1.5 w-36">
+        <option value="">Toutes</option>
+        <option value="en_attente">En attente</option>
+        <option value="retenue">Retenues</option>
+        <option value="refusee">Refusées</option>
+      </select>
+    </div>
+    <div id="suggestions-list">
+      <div class="empty-state py-12">
+        <div class="empty-state-icon">💡</div>
+        <p class="font-semibold text-slate-300 mb-1">Aucune suggestion pour l'instant</p>
+        <p class="text-sm">Soyez le premier à proposer une œuvre !</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="/js/app.js"></script>
+<script src="/js/suggestions.js"></script>
+<script>
+  // Compteur textarea
+  const raison = document.getElementById('sug-raison');
+  const counter = document.getElementById('raison-count');
+  if (raison && counter) {
+    raison.addEventListener('input', () => {
+      counter.textContent = raison.value.length + '/800';
+      counter.className = 'text-xs ' + (raison.value.length >= 30 ? 'text-emerald-500' : 'text-slate-600');
+    });
+  }
+</script>
+</body>
+</html>

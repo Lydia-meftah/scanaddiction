@@ -1,0 +1,33 @@
+# Prompt prêt à coller dans Claude Code
+# ─────────────────────────────────────────────────────────────
+# Ouvre un terminal dans le dossier "scan project" et tape :
+#   claude
+# Puis colle le texte ci-dessous :
+# ─────────────────────────────────────────────────────────────
+
+Tu es dans le dossier d'un site web statique appelé Scanaddiction
+(plateforme de scantrad amateur francophone).
+
+Le projet est complet et prêt à déployer sur Cloudflare Pages.
+Fais les actions suivantes dans l'ordre :
+
+1. Initialise un dépôt git local (git init) si ce n'est pas déjà fait.
+
+2. Crée un fichier .gitignore avec : .DS_Store, Thumbs.db, *.log, node_modules/, .env
+
+3. Crée un nouveau repo GitHub PUBLIC appelé "scanaddiction" pour l'utilisateur
+   connecté, avec la description "Plateforme communautaire de scantrad amateur francophone".
+
+4. Ajoute tous les fichiers (git add .) et fais un premier commit avec le message :
+   "feat: init Scanaddiction — site scantrad francophone complet"
+
+5. Pousse le code sur la branche main du repo GitHub créé.
+
+6. Affiche l'URL du repo GitHub et rappelle les étapes Cloudflare Pages :
+   - Build command : laisser vide
+   - Output directory : /
+   - Pas de build step
+
+7. (Optionnel si Make est configuré) Crée un scénario Make qui :
+   - Se déclenche sur un webhook
+   - Envoie une notification Discord quand un nouveau chapitre est ajouté

@@ -1,0 +1,45 @@
+{
+  "name": "Scanaddiction — Notif Discord nouveau chapitre",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "hook": "REMPLACE_PAR_ID_WEBHOOK_MAKE",
+        "maxResults": 1
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": { "x": 0, "y": 0 },
+        "restore": { "parameters": { "hook": { "label": "Scanaddiction webhook" } } }
+      }
+    },
+    {
+      "id": 2,
+      "module": "discord:ActionSendMessage",
+      "version": 1,
+      "parameters": {
+        "server": "REMPLACE_PAR_ID_SERVEUR_DISCORD",
+        "channel": "REMPLACE_PAR_ID_CHANNEL"
+      },
+      "mapper": {
+        "content": "📖 **Nouveau chapitre disponible sur Scanaddiction !**\n\n**{{1.titre}}** — Ch.{{1.numero}} · {{1.chapTitre}}\n\n🔗 https://scanaddiction.pages.dev/lecteur.html?id={{1.oeuvreId}}&ch={{1.numero}}"
+      },
+      "metadata": {
+        "designer": { "x": 300, "y": 0 }
+      }
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true
+    },
+    "designer": { "orphans": [] }
+  }
+}
