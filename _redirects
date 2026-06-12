@@ -1,0 +1,6 @@
+# Cloudflare Pages — redirections
+# La 404.html est servie automatiquement par Cloudflare pour les URLs inexistantes
+# Ce fichier gere les alias pratiques
+
+/manga /catalogue.html 301
+/lire /catalogue.html 301
