@@ -18,6 +18,7 @@ import json
 import re
 import time
 import os
+import gzip as gzip_module
 from datetime import datetime, timezone
 from urllib.request import urlopen, Request
 from urllib.parse import urljoin, urlparse, unquote
@@ -80,8 +81,8 @@ HEADERS = {
     ),
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.5",
-    "Accept-Encoding": "gzip, deflate",
-    "Connection": "keep-alive",
+    # Pas de Accept-Encoding: urllib ne décompresse pas le gzip automatiquement
+    # On gère manuellement via Content-Encoding dans fetch()
 }
 
 
@@ -95,12 +96,20 @@ def fetch(url, retries=3):
             req = Request(url, headers=HEADERS)
             with urlopen(req, timeout=TIMEOUT) as r:
                 raw = r.read()
+
+                # Décompression manuelle si le serveur renvoie du gzip
+                encoding = r.headers.get("Content-Encoding", "")
+                if "gzip" in encoding:
+                    try:
+                        raw = gzip_module.decompress(raw)
+                    except Exception:
+                        pass
+
                 charset = "utf-8"
                 ct = r.headers.get("Content-Type", "")
                 m = re.search(r"charset=([^\s;]+)", ct, re.I)
                 if m:
                     charset = m.group(1).lower().replace("iso-8859-1", "latin-1")
-                # Gzip auto-décompressé par urllib si Accept-Encoding: gzip
                 try:
                     return raw.decode(charset, errors="replace")
                 except (LookupError, UnicodeDecodeError):
@@ -583,14 +592,4 @@ def main():
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(catalogue, f, ensure_ascii=False, indent=2)
-
-    print("=" * 55)
-    print(f"✅ Catalogue généré: {OUTPUT_FILE}")
-    print(f"   {catalogue['total']} œuvres de {len(catalogue['sources'])} source(s)")
-    print(f"   Sources: {', '.join(catalogue['sources'])}")
-    print(f"   Mise à jour: {catalogue['lastUpdate']}")
-
-
-if __name__ == "__main__":
-    main()
+        json.dump(catalogue, f, 
