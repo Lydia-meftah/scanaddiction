@@ -14,22 +14,6 @@ jobs:
     permissions:
       contents: write
 
-    # ── FlareSolverr : résout les challenges Cloudflare JS ─────────────────
-    services:
-      flaresolverr:
-        image: ghcr.io/flaresolverr/flaresolverr:latest
-        ports:
-          - 8191:8191
-        env:
-          LOG_LEVEL: info
-          BROWSER_TIMEOUT: 40000
-        options: >-
-          --health-cmd "curl -sf http://localhost:8191/health || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-          --health-start-period 30s
-
     steps:
       - name: 📥 Checkout repo
         uses: actions/checkout@v4
@@ -42,30 +26,23 @@ jobs:
       - name: 📦 Install dependencies
         run: pip install requests beautifulsoup4 lxml
 
-      - name: ⏳ Attendre FlareSolverr
-        run: |
-          echo "Attente que FlareSolverr soit prêt…"
-          for i in $(seq 1 20); do
-            if curl -sf http://localhost:8191/health > /dev/null 2>&1; then
-              echo "✅ FlareSolverr prêt (tentative $i)"
-              break
-            fi
-            echo "  tentative $i/20…"
-            sleep 5
-          done
-          curl -s http://localhost:8191/health | python3 -m json.tool || true
-
       - name: 🕷️ Run scraper
         run: python scraper.py
         env:
           PYTHONUNBUFFERED: "1"
-          FLARESOLVERR_URL: "http://localhost:8191/v1"
 
       - name: 📊 Vérification du JSON
         run: |
-          python -c "
-          import json, sys
-          with open('data/catalogue-fr.json') as f:
-            data = json.load(f)
-          print(f'✅ {data[\"total\"]} oeuvres scrappées')
-          print(f'   Sources: {data[\"sources\"
+          python check_catalogue.py
+
+      - name: 💾 Commit & Push catalogue mis à jour
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/catalogue-fr.json
+          if git diff --staged --quiet; then
+            echo "Aucun changement a committer."
+          else
+            git commit -m "Mise a jour catalogue"
+            git push
+          fi
