@@ -1,426 +1,192 @@
 #!/usr/bin/env python3
 """
-scraper.py — Catalogue francophone scantrad
-Utilise FlareSolverr (service Docker) pour contourner Cloudflare.
-FlareSolverr lance un vrai Chromium headless avec undetected-chromedriver
-→ résout les JS challenges Cloudflare.
+scraper.py - Catalogue francophone (sources autorisees)
 
-Fallback: requests direct si FlareSolverr indisponible.
+Ce scraper construit le catalogue a partir d'APIs publiques et autorisees,
+concues pour un usage par des applications tierces :
 
-Sources :
-  - crunchyscan.fr   (sitemaps XML → 1800+ séries, mode rapide)
-  - raijin-scans.fr  (WordPress/Madara)
-  - sushiscan.net    (WordPress/Madara)
-  - manga-scantrad.io(WordPress/Madara)
-  - phenixscans.fr   (WordPress/Madara)
+  - AniList GraphQL API (https://anilist.co)  -> metadonnees manga/manhwa/manhua
+    (titres, couvertures, synopsis, genres, score, statut, chapitres)
+
+Aucune protection anti-bot n'est contournee : on utilise uniquement des
+points d'acces API documentes et destines a etre consommes par des tiers.
+
+Le JSON genere conserve le meme schema que precedemment afin de rester
+compatible avec le front-end (data/catalogue-fr.json).
 """
 
 import json
-import re
-import time
 import os
+import re
 import sys
+import time
 from datetime import datetime, timezone
-from urllib.parse import urlparse, unquote
 
 import requests
 
-# ──────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------
 # Config
-# ──────────────────────────────────────────────────────────────
-FLARESOLVERR_URL = os.environ.get("FLARESOLVERR_URL", "http://localhost:8191/v1")
-
-SOURCES = [
-    {
-        "nom":           "Crunchyscan",
-        "url":           "https://crunchyscan.fr",
-        "type":          "crunchyscan",
-        "sitemap_count": 4,
-    },
-    {
-        "nom": "Raijin Scans",
-        "url": "https://raijin-scans.fr",
-        "type": "madara",
-    },
-    {
-        "nom": "Sushiscan",
-        "url": "https://sushiscan.net",
-        "type": "madara",
-    },
-    {
-        "nom": "Manga Scantrad",
-        "url": "https://manga-scantrad.io",
-        "type": "madara",
-    },
-    {
-        "nom": "Phénix Scans",
-        "url": "https://www.phenixscans.fr",
-        "type": "madara",
-    },
-]
-
+# -------------------------------------------------------------------
+ANILIST_URL = "https://graphql.anilist.co"
 OUTPUT_FILE = os.path.join(os.path.dirname(__file__), "data", "catalogue-fr.json")
-DELAY       = 2.0    # pause entre requêtes (FlareSolverr est plus lent)
-MAX_PAGES   = 8
-PER_PAGE    = 36
-FS_TIMEOUT  = 90     # secondes pour FlareSolverr (résolution du challenge)
-HTTP_TIMEOUT = 20
+
+PER_PAGE = 50          # max autorise par AniList
+MAX_PAGES = 6          # 6 * 50 = 300 oeuvres
+DELAY = 1.0            # pause entre requetes (respecte le rate-limit AniList)
+HTTP_TIMEOUT = 30
 
 HEADERS = {
-    "User-Agent":      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    "Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.5",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "User-Agent": "Scanaddiction-catalogue/1.0 (catalogue francophone)",
 }
 
-# Cache de session FlareSolverr par domaine (réutilise les cookies)
-_fs_sessions = {}
-
-
-# ──────────────────────────────────────────────────────────────
-# HTTP via FlareSolverr + fallback direct
-# ──────────────────────────────────────────────────────────────
-def check_flaresolverr():
-    """Vérifie que FlareSolverr est disponible."""
-    try:
-        r = requests.get(FLARESOLVERR_URL.replace("/v1", "/health"), timeout=5)
-        return r.status_code == 200
-    except Exception:
-        return False
-
-
-def fetch_via_flaresolverr(url, session_id=None):
-    """Envoie une requête via FlareSolverr qui résout le challenge Cloudflare."""
-    payload = {
-        "cmd":        "request.get",
-        "url":        url,
-        "maxTimeout": 60000,
+# Requete GraphQL : manga populaires, tries par popularite.
+QUERY = """
+query ($page: Int, $perPage: Int) {
+  Page(page: $page, perPage: $perPage) {
+    media(type: MANGA, sort: POPULARITY_DESC) {
+      id
+      title { romaji english native }
+      description(asHtml: false)
+      genres
+      averageScore
+      status
+      chapters
+      countryOfOrigin
+      siteUrl
+      coverImage { large }
+      staff(perPage: 1) { nodes { name { full } } }
     }
-    if session_id:
-        payload["session"] = session_id
-    try:
-        r = requests.post(FLARESOLVERR_URL, json=payload, timeout=FS_TIMEOUT)
-        data = r.json()
-        if data.get("status") == "ok":
-            html = data["solution"]["response"]
-            print(f"    FS✅ {len(html):>7} chars — {url[:65]}")
-            return html
-        else:
-            msg = data.get("message", "unknown")
-            print(f"    FS❌ {msg[:80]} — {url[:50]}")
-    except Exception as e:
-        print(f"    FS⚠ {e} — {url[:50]}")
-    return None
+  }
+}
+"""
+
+# Mapping pays d'origine -> type d'oeuvre
+TYPE_PAR_PAYS = {
+    "JP": "manga",
+    "KR": "manhwa",
+    "CN": "manhua",
+    "TW": "manhua",
+}
+
+STATUT_MAP = {
+    "RELEASING": "en cours",
+    "FINISHED": "termine",
+    "HIATUS": "pause",
+    "CANCELLED": "annule",
+    "NOT_YET_RELEASED": "a venir",
+}
 
 
-def fetch_direct(url):
-    """Requête directe sans FlareSolverr (fallback)."""
-    try:
-        r = requests.get(url, headers=HEADERS, timeout=HTTP_TIMEOUT, allow_redirects=True)
-        print(f"    DR {r.status_code}  {len(r.text):>7} chars — {url[:65]}")
-        if r.status_code == 200:
-            return r.text
-    except Exception as e:
-        print(f"    DR⚠ {e} — {url[:50]}")
-    return None
-
-
-_fs_available = None
-
-def fetch(url, retries=2):
-    """
-    Fetch URL: essaie FlareSolverr d'abord, puis fallback direct.
-    Retourne le HTML (str) ou None.
-    """
-    global _fs_available
-    if _fs_available is None:
-        _fs_available = check_flaresolverr()
-        print(f"  FlareSolverr disponible: {'✅ oui' if _fs_available else '❌ non (fallback direct)'}")
-
-    # Session par domaine pour réutiliser les cookies Cloudflare
-    domain = urlparse(url).netloc
-    session_id = f"scan_{domain.replace('.', '_')}"
-
-    for attempt in range(retries):
-        if _fs_available:
-            html = fetch_via_flaresolverr(url, session_id)
-            if html:
-                return html
-        # Fallback direct
-        html = fetch_direct(url)
-        if html:
-            return html
-        if attempt < retries - 1:
-            time.sleep(3)
-    return None
-
-
-# ──────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------
 # Helpers
-# ──────────────────────────────────────────────────────────────
-def strip_tags(html):
-    return re.sub(r"<[^>]+>", "", html or "").strip()
-
-def clean_text(s):
-    if not s:
+# -------------------------------------------------------------------
+def clean_text(txt):
+    if not txt:
         return ""
-    for old, new in [
-        ("&amp;","&"),("&lt;","<"),("&gt;",">"),("&quot;",'"'),
-        ("&#039;","'"),("&rsquo;","'"),("&nbsp;"," "),("\xa0"," "),
-        ("&laquo;","«"),("&raquo;","»"),
-    ]:
-        s = s.replace(old, new)
-    return re.sub(r"\s+", " ", s).strip()
-
-def slug_from_url(url):
-    for pat in (r"/manga/([^/?#]+)", r"/lecture-en-ligne/([^/?#]+)"):
-        m = re.search(pat, url)
-        if m:
-            return m.group(1)
-    return urlparse(url).path.strip("/").replace("/", "-")
-
-def title_from_slug(slug):
-    return re.sub(r"\b(\w)", lambda m: m.group(1).upper(), slug.replace("-", " "))
+    # AniList renvoie parfois des balises <br>, <i>, etc. dans la description
+    txt = re.sub(r"<[^>]+>", " ", txt)
+    txt = re.sub(r"\s+", " ", txt).strip()
+    return txt
 
 
-# ──────────────────────────────────────────────────────────────
-# Scraper Crunchyscan — via sitemaps XML (mode rapide)
-# ──────────────────────────────────────────────────────────────
-def scrape_source_crunchyscan(source):
-    """
-    Lit les 4 sitemaps XML de Crunchyscan pour récupérer tous les slugs.
-    Construit les items sans fetcher les pages détail :
-    - titre dérivé du slug
-    - cover URL déterministe: /upload/manga/{slug}/cover.jpg
-    → ~1800+ séries, rapide et robuste.
-    """
-    base  = source["url"]
-    n     = source.get("sitemap_count", 4)
-    items = []
-    seen  = set()
-
-    print(f"\n🌐 [Crunchyscan] Lecture sitemaps XML ({n} fichiers)…")
-    for i in range(1, n + 1):
-        url = f"{base}/sitemap-series-{i}.xml"
-        print(f"  🗺  sitemap-series-{i}.xml")
-        xml = fetch(url)
-        if not xml:
-            print(f"    ⚠ inaccessible")
-            time.sleep(DELAY)
-            continue
-
-        slugs = re.findall(r'/lecture-en-ligne/([^<\s"\']+)', xml)
-        print(f"    → {len(slugs)} slugs trouvés")
-
-        for slug in slugs:
-            slug = slug.strip("/")
-            if not slug or slug in seen:
-                continue
-            seen.add(slug)
-            items.append({
-                "id":              slug,
-                "titre":           title_from_slug(slug),
-                "url":             f"{base}/lecture-en-ligne/{slug}",
-                "cover":           f"{base}/upload/manga/{slug}/cover.jpg",
-                "type":            "manhwa",
-                "statut":          "en cours",
-                "synopsis":        "",
-                "genres":          [],
-                "auteur":          "",
-                "note":            0.0,
-                "dernierChapitre": 0,
-                "sourceNom":       source["nom"],
-                "sourceUrl":       source["url"],
-            })
-        time.sleep(DELAY)
-
-    print(f"  → Total: {len(items)} œuvres Crunchyscan")
-    return items
-
-
-# ──────────────────────────────────────────────────────────────
-# Scraper Madara (WordPress)
-# ──────────────────────────────────────────────────────────────
-def scrape_madara_list(base_url, page=1):
-    url  = f"{base_url}/page/{page}/?post_type=wp-manga&s=&sort=recently_added"
-    print(f"  📄 page {page}: {url}")
-    html = fetch(url)
-    if not html:
-        return []
-
-    items, seen = [], set()
-
-    # Pattern h3.h5 → /manga/
-    for href, titre in re.findall(
-        r'<h3[^>]*class=["\'][^"\']*h5[^"\']*["\'][^>]*>\s*<a\s+href=["\']([^"\']+/manga/[^"\']+)["\'][^>]*>([^<]+)</a>',
-        html, re.I | re.S
-    ):
-        href  = href.strip()
-        titre = clean_text(titre)
-        if not titre or href in seen:
-            continue
-        seen.add(href)
-
-        idx    = html.find(href)
-        nearby = html[max(0, idx-800):idx+200]
-        nl     = nearby.lower()
-
-        cover = ""
-        for attr in ("data-src", "src"):
-            m = re.search(rf'{attr}=["\']([^"\']+\.(?:jpg|png|webp)[^"\']*)["\']', nearby, re.I)
-            if m:
-                cover = m.group(1); break
-
-        type_str = "manhwa"
-        for t in ("manhwa","manhua","webtoon","manga"):
-            if t in nl: type_str = t; break
-
-        statut = "en cours"
-        if any(k in nl for k in ("terminé","completed","finished")): statut = "terminé"
-        elif any(k in nl for k in ("pause","hiatus")): statut = "pause"
-
-        items.append({"titre":titre,"url":href,"cover":cover,"type":type_str,"statut":statut})
-
-    # Fallback général
-    if not items:
-        for href, titre in re.findall(
-            r'href=["\']([^"\']+/manga/[^"\']+)["\'][^>]*>\s*(?:<[^>]+>)*\s*([A-ZÀ-Ü][^<]{2,80})',
-            html, re.I|re.S
-        ):
-            titre = clean_text(strip_tags(titre))
-            if len(titre)<2 or href in seen: continue
-            seen.add(href)
-            items.append({"titre":titre,"url":href.strip(),"cover":"","type":"manhwa","statut":"en cours"})
-
-    print(f"    → {len(items)} œuvres")
-    return items
-
-
-def scrape_madara_detail(item):
-    html = fetch(item["url"])
-    if not html:
-        return item
-
-    synopsis = ""
-    m = re.search(r'class=["\'][^"\']*summary__content[^"\']*["\'][^>]*>(.*?)</div>', html, re.S|re.I)
-    if m: synopsis = clean_text(strip_tags(m.group(1)))[:600]
-
-    genres = list(dict.fromkeys(
-        g.lower().replace("-"," ")
-        for g in re.findall(r'/genre/([^/"]+)/', html, re.I)
-    ))[:6]
-
-    auteur = ""
-    m = re.search(r'class=["\'][^"\']*author-content[^"\']*["\'][^>]*>(.*?)</div>', html, re.S|re.I)
-    if m: auteur = clean_text(strip_tags(m.group(1)))
-
-    note = 0.0
-    m = re.search(r'class=["\'][^"\']*total-votes[^"\']*["\'][^>]*>([0-9.]+)<', html, re.I)
-    if not m: m = re.search(r'"ratingValue"\s*:\s*"?([0-9.]+)"?', html)
-    if m:
-        try:
-            raw = float(m.group(1))
-            note = round(raw/2,1) if raw>5 else round(raw,1)
-        except ValueError: pass
-
-    ch_nums = re.findall(r'/chapter-?(\d+(?:\.\d+)?)', html, re.I)
-    dernier_ch = 0
-    if ch_nums:
-        try: dernier_ch = int(float(max(ch_nums, key=lambda x: float(x))))
-        except: pass
-
-    cover = item.get("cover","")
-    m = re.search(r'class=["\'][^"\']*summary_image[^"\']*["\'][^>]*>.*?<img[^>]+(?:src|data-src)=["\']([^"\']+)["\']', html, re.S|re.I)
-    if m: cover = m.group(1).strip()
-
-    type_str = item.get("type","manhwa")
-    hl = html.lower()
-    for t in ("manhwa","manhua","webtoon","manga"):
-        if t in hl: type_str=t; break
-
-    statut = item.get("statut","en cours")
-    if any(k in hl for k in ("terminé","completed","finished")): statut="terminé"
-    elif any(k in hl for k in ("pause","hiatus")): statut="pause"
-
-    print(f"    📖 {item['titre'][:45]} Ch.{dernier_ch}")
-    return {**item,"cover":cover,"synopsis":synopsis,"genres":genres,
-            "auteur":auteur,"type":type_str,"statut":statut,
-            "note":note,"dernierChapitre":dernier_ch}
-
-
-def scrape_source_madara(source):
-    print(f"\n🌐 [Madara] {source['nom']} ({source['url']})")
-    all_items, seen_urls = [], set()
-
-    for page in range(1, MAX_PAGES+1):
-        items = scrape_madara_list(source["url"], page)
-        if not items:
-            print(f"  ✅ Fin à page {page}")
-            break
-        new_items = [i for i in items if i["url"] not in seen_urls]
-        if not new_items: break
-        for i in new_items: seen_urls.add(i["url"])
-
-        for item in new_items[:PER_PAGE]:
-            time.sleep(DELAY)
-            enriched = scrape_madara_detail(item)
-            enriched.update({"sourceNom":source["nom"],"sourceUrl":source["url"],"id":slug_from_url(enriched["url"])})
-            all_items.append(enriched)
-
-        time.sleep(DELAY)
-
-    print(f"  → Total: {len(all_items)} œuvres pour {source['nom']}")
-    return all_items
-
-
-# ──────────────────────────────────────────────────────────────
-# Dispatcher
-# ──────────────────────────────────────────────────────────────
-def scrape_source(source):
+def fetch_page(page):
+    """Recupere une page de resultats via l'API GraphQL AniList."""
+    payload = {"query": QUERY, "variables": {"page": page, "perPage": PER_PAGE}}
     try:
-        if source["type"] == "madara":
-            return scrape_source_madara(source)
-        if source["type"] == "crunchyscan":
-            return scrape_source_crunchyscan(source)
-        return []
+        r = requests.post(ANILIST_URL, json=payload, headers=HEADERS, timeout=HTTP_TIMEOUT)
+        if r.status_code != 200:
+            print(f"  AniList HTTP {r.status_code} (page {page})")
+            return []
+        data = r.json()
+        media = data.get("data", {}).get("Page", {}).get("media", [])
+        print(f"  AniList page {page}: {len(media)} oeuvres")
+        return media
     except Exception as e:
-        import traceback
-        print(f"  ❌ Erreur fatale {source['nom']}: {e}")
-        traceback.print_exc()
+        print(f"  AniList erreur page {page}: {e}")
         return []
 
 
-# ──────────────────────────────────────────────────────────────
-# Catalogue
-# ──────────────────────────────────────────────────────────────
+def map_media(m):
+    """Transforme une oeuvre AniList vers le schema du catalogue."""
+    titles = m.get("title") or {}
+    titre = titles.get("romaji") or titles.get("english") or titles.get("native") or "Sans titre"
+
+    staff_nodes = (m.get("staff") or {}).get("nodes") or []
+    auteur = ""
+    if staff_nodes:
+        auteur = (staff_nodes[0].get("name") or {}).get("full", "") or ""
+
+    score = m.get("averageScore")
+    note = round(score / 10.0, 1) if isinstance(score, (int, float)) else 0.0
+
+    pays = m.get("countryOfOrigin") or "JP"
+    type_oeuvre = TYPE_PAR_PAYS.get(pays, "manga")
+
+    statut = STATUT_MAP.get(m.get("status") or "", "en cours")
+
+    cover = (m.get("coverImage") or {}).get("large", "") or ""
+
+    return {
+        "id": str(m.get("id", "")),
+        "titre": titre,
+        "url": m.get("siteUrl", "") or "",
+        "cover": cover,
+        "type": type_oeuvre,
+        "statut": statut,
+        "synopsis": clean_text(m.get("description")),
+        "genres": m.get("genres") or [],
+        "auteur": auteur,
+        "note": note,
+        "dernierChapitre": m.get("chapters") or 0,
+        "sourceNom": "AniList",
+        "sourceUrl": "https://anilist.co",
+    }
+
+
+def scrape_anilist():
+    """Recupere les oeuvres populaires depuis AniList."""
+    print("\n[AniList] Recuperation des metadonnees (API GraphQL autorisee)")
+    items = []
+    seen = set()
+    for page in range(1, MAX_PAGES + 1):
+        media = fetch_page(page)
+        if not media:
+            break
+        for m in media:
+            mid = m.get("id")
+            if mid in seen:
+                continue
+            seen.add(mid)
+            items.append(map_media(m))
+        time.sleep(DELAY)
+    print(f"-> Total: {len(items)} oeuvres depuis AniList")
+    return items
+
+
 def build_catalogue(all_items):
-    seen, unique = set(), []
-    for item in all_items:
-        key = re.sub(r"[^a-z0-9]", "", item["titre"].lower())
-        if key and key not in seen:
-            seen.add(key)
-            unique.append(item)
-    unique.sort(key=lambda x: x["titre"].lower())
+    """Deduplique et construit la structure finale du catalogue."""
+    unique = {}
+    for it in all_items:
+        key = it.get("id") or it.get("titre")
+        if key and key not in unique:
+            unique[key] = it
+    oeuvres = list(unique.values())
     return {
         "lastUpdate": datetime.now(timezone.utc).isoformat(),
-        "total":      len(unique),
-        "sources":    sorted({i["sourceNom"] for i in unique}),
-        "oeuvres":    unique,
+        "total": len(oeuvres),
+        "sources": sorted({i["sourceNom"] for i in oeuvres}),
+        "oeuvres": oeuvres,
     }
 
 
-# ──────────────────────────────────────────────────────────────
-# Main
-# ──────────────────────────────────────────────────────────────
 def main():
-    print("🚀 Scanaddiction — Scraper catalogue francophone")
-    print(f"   FlareSolverr: {FLARESOLVERR_URL}")
+    print("Scanaddiction - Scraper catalogue francophone")
     print("=" * 55)
 
     all_items = []
-    for source in SOURCES:
-        items = scrape_source(source)
-        all_items.extend(items)
-        print(f"  📦 Cumul: {len(all_items)} œuvres\n")
+    all_items.extend(scrape_anilist())
 
     catalogue = build_catalogue(all_items)
 
@@ -429,9 +195,10 @@ def main():
         json.dump(catalogue, f, ensure_ascii=False, indent=2)
 
     print("=" * 55)
-    print(f"✅ {catalogue['total']} œuvres — {', '.join(catalogue['sources'])}")
+    print(f"Catalogue genere: {OUTPUT_FILE}")
+    print(f"{catalogue['total']} oeuvres - sources: {catalogue['sources']}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+    sys.exit(main())
