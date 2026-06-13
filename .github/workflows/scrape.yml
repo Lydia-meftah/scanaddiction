@@ -11,7 +11,7 @@ jobs:
   scrape:
     name: Scraper les sites francophones
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     permissions:
       contents: write   # nécessaire pour git push
@@ -26,7 +26,7 @@ jobs:
           python-version: '3.11'
 
       - name: 📦 Install dependencies
-        run: pip install requests beautifulsoup4 lxml
+        run: pip install requests cloudscraper beautifulsoup4 lxml
 
       - name: 🕷️ Run scraper
         run: python scraper.py
@@ -42,9 +42,11 @@ jobs:
           print(f'✅ {data[\"total\"]} oeuvres scrappées')
           print(f'   Sources: {data[\"sources\"]}')
           print(f'   Mise à jour: {data[\"lastUpdate\"]}')
-          if data['total'] < 5:
-            print('⚠️  Moins de 5 oeuvres — vérifier le scraper')
+          if data['total'] == 0:
+            print('❌ Zéro oeuvre — toutes les sources bloquées')
             sys.exit(1)
+          elif data['total'] < 20:
+            print(f'⚠️  Seulement {data[\"total\"]} oeuvres — sources partiellement bloquées')
           "
 
       - name: 💾 Commit & Push catalogue mis à jour
@@ -56,7 +58,4 @@ jobs:
             echo "ℹ️  Aucun changement dans le catalogue"
           else
             COUNT=$(python -c "import json; d=json.load(open('data/catalogue-fr.json')); print(d['total'])")
-            git commit -m "🤖 Catalogue mis à jour — ${COUNT} œuvres [$(date +'%Y-%m-%d')]"
-            git push
-            echo "✅ Catalogue poussé sur GitHub → Cloudflare redéploie automatiquement"
-          fi
+            git commit -m "🤖 Catalogue mis à jour — ${COUNT} œuvres [$
