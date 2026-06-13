@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lecteur — Scanaddiction</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0d0d0d;
+      --bg2:     #161616;
+      --bg3:     #1e1e1e;
+      --border:  #2a2a2a;
+      --text:    #e8e8e8;
+      --muted:   #888;
+      --accent:  #7c3aed;
+      --accent2: #a855f7;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Topbar ── */
+    #topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,13,13,.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px;
+      height: 52px;
+    }
+    #topbar a.home {
+      color: var(--accent2);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.1rem;
+      white-space: nowrap;
+    }
+    #topbar .sep { color: var(--border); }
+    #manga-title {
+      font-size: .9rem;
+      color: var(--muted);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #chapter-select {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: .85rem;
+      cursor: pointer;
+      max-width: 220px;
+    }
+    .btn {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: .85rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s;
+    }
+    .btn:hover { background: var(--bg2); border-color: var(--accent); }
+    .btn:disabled { opacity: .4; cursor: default; }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .btn.primary:hover { background: var(--accent2); border-color: var(--accent2); }
+
+    /* ── État chargement / erreur ── */
+    #state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 16px;
+      color: var(--muted);
+    }
+    #state .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent2);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #state h2 { color: var(--text); font-size: 1.1rem; }
+    #state p  { font-size: .9rem; max-width: 420px; text-align: center; line-height: 1.5; }
+
+    /* ── Info manga (header) ── */
+    #manga-header {
+      display: none;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+    }
+    #manga-header img {
+      width: 64px; height: 90px;
+      object-fit: cover;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    #manga-header .info h1 { font-size: 1.1rem; margin-bottom: 4px; }
+    #manga-header .info p  { font-size: .8rem; color: var(--muted); }
+
+    /* ── Lecteur images ── */
+    #reader {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 0 40px;
+      background: #000;
+    }
+    #reader img {
+      display: block;
+      max-width: min(800px, 100vw);
+      width: 100%;
+      height: auto;
+    }
+
+    /* ── Nav bas de page ── */
+    #bottomnav {
+      display: none;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Erreur image (img cassée) ── */
+    img.broken { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div id="topbar">
+  <a href="/catalogue-fr.html" class="home">✦ Scanaddiction</a>
+  <span class="sep">›</span>
+  <span id="manga-title">Chargement…</span>
+  <select id="chapter-select" style="display:none" onchange="loadChapter(this.value)">
+    <option>Chargement des chapitres…</option>
+  </select>
+  <button class="btn" id="btn-prev" disabled onclick="navChapter(-1)">◀</button>
+  <button class="btn" id="btn-next" disabled onclick="navChapter(+1)">▶</button>
+</div>
+
+<div id="manga-header">
+  <img id="hd-cover" src="" alt="" />
+  <div class="info">
+    <h1 id="hd-title"></h1>
+    <p  id="hd-meta"></p>
+  </div>
+</div>
+
+<div id="state">
+  <div class="spinner"></div>
+  <h2>Chargement du manga…</h2>
+  <p>Récupération des informations depuis MangaDex.</p>
+</div>
+
+<div id="reader"></div>
+
+<div id="bottomnav">
+  <button class="btn" id="btn-prev2" disabled onclick="navChapter(-1)">◀ Chapitre précédent</button>
+  <button class="btn primary" onclick="scrollTo(0,0)">↑ Haut de page</button>
+  <button class="btn" id="btn-next2" disabled onclick="navChapter(+1)">Chapitre suivant ▶</button>
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+// Config
+// ──────────────────────────────────────────────
+const MDX = "https://api.mangadex.org";
+const CDN_SAVER = true; // data-saver (images compressées, plus rapide)
+
+// ──────────────────────────────────────────────
+// State
+// ──────────────────────────────────────────────
+let mangaId   = null;
+let chapters  = [];    // [{id, num, title, vol}]
+let curIdx    = -1;
+
+// ──────────────────────────────────────────────
+// Init
+// ──────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", async () => {
+  const p = new URLSearchParams(location.search);
+  mangaId = p.get("id");
+  const chapId = p.get("chapter");
+
+  if (!mangaId) {
+    showError("Manga introuvable", "Aucun identifiant manga fourni dans l'URL. Retourne au catalogue et clique sur un manga.");
+    return;
+  }
+
+  await loadMangaInfo(mangaId);
+  await loadChapterList(mangaId);
+
+  if (chapters.length === 0) {
+    showError("Aucun chapitre FR disponible",
+      "Ce manga n'a pas encore de chapitres traduits en français sur MangaDex.");
+    return;
+  }
+
+  // Chapitre cible : param URL ou premier chapitre
+  let targetIdx = 0;
+  if (chapId) {
+    const found = chapters.findIndex(c => c.id === chapId);
+    if (found >= 0) targetIdx = found;
+  }
+  await loadChapter(chapters[targetIdx].id, targetIdx);
+});
+
+// ──────────────────────────────────────────────
+// Info manga
+// ──────────────────────────────────────────────
+async function loadMangaInfo(id) {
+  try {
+    const r = await fetch(`${MDX}/manga/${id}?includes[]=cover_art`);
+    if (!r.ok) return;
+    const { data } = await r.json();
+    const attrs = data.attributes || {};
+    const t = attrs.title || {};
+    const titre = t.fr || t.en || t["ja-ro"] || Object.values(t)[0] || "Sans titre";
+
+    // Cover
+    const coverRel = (data.relationships || []).find(r => r.type === "cover_art");
+    const coverFn  = coverRel?.attributes?.fileName || "";
+    const coverUrl = coverFn
+      ? `https://uploads.mangadex.org/covers/${id}/${coverFn}.512.jpg`
+      : "";
+
+    document.title = `${titre} — Scanaddiction`;
+    document.getElementById("manga-title").textContent = titre;
+    document.getElementById("hd-title").textContent   = titre;
+    document.getElementById("hd-meta").textContent    =
+      `${(attrs.status === "ongoing" ? "En cours" : "Terminé")} · MangaDex`;
+    if (coverUrl) document.getElementById("hd-cover").src = coverUrl;
+
+    document.getElementById("manga-header").style.display = "flex";
+  } catch (e) {
+    console.warn("loadMangaInfo:", e);
+  }
+}
+
+// ──────────────────────────────────────────────
+// Liste des chapitres
+// ──────────────────────────────────────────────
+async function loadChapterList(id) {
+  chapters = [];
+  let offset = 0;
+  const limit = 100;
+
+  while (true) {
+    const url = `${MDX}/manga/${id}/feed`
+      + `?translatedLanguage[]=fr&order[chapter]=asc&limit=${limit}&offset=${offset}`
+      + `&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica`;
+    const r = await fetch(url);
+    if (!r.ok) break;
+    const json = await r.json();
+    const data = json.data || [];
+    if (!data.length) break;
+
+    for (const ch of data) {
+      const a = ch.attributes || {};
+      const num = parseFloat(a.chapter) || 0;
+      // Dédupe: garde la version la mieux notée si même numéro
+      const existing = chapters.findIndex(c => c.num === num);
+      const entry = { id: ch.id, num, title: a.title || "", vol: a.volume || "" };
+      if (existing >= 0) chapters[existing] = entry;
+      else chapters.push(entry);
+    }
+    if (data.length < limit) break;
+    offset += limit;
+  }
+
+  // Tri croissant
+  chapters.sort((a, b) => a.num - b.num);
+
+  // Peuple le <select>
+  const sel = document.getElementById("chapter-select");
+  sel.innerHTML = chapters.map((c, i) => {
+    const vol  = c.vol ? `Vol.${c.vol} ` : "";
+    const name = c.title ? ` — ${c.title}` : "";
+    return `<option value="${c.id}" data-idx="${i}">${vol}Chapitre ${c.num}${name}</option>`;
+  }).join("");
+  sel.style.display = chapters.length ? "block" : "none";
+}
+
+// ──────────────────────────────────────────────
+// Charger un chapitre
+// ──────────────────────────────────────────────
+async function loadChapter(chapId, idxHint) {
+  // Trouver l'index si pas fourni
+  if (idxHint === undefined) {
+    idxHint = chapters.findIndex(c => c.id === chapId);
+  }
+  curIdx = idxHint;
+
+  // Sync select
+  const sel = document.getElementById("chapter-select");
+  sel.value = chapId;
+
+  // Mise à jour URL sans reload
+  const url = new URL(location.href);
+  url.searchParams.set("chapter", chapId);
+  history.replaceState(null, "", url.toString());
+
+  // État chargement
+  setState("loading", "Chargement du chapitre…", "Récupération des images depuis MangaDex.");
+
+  try {
+    const r = await fetch(`${MDX}/at-home/server/${chapId}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const json = await r.json();
+
+    const base    = json.baseUrl;
+    const hash    = json.chapter.hash;
+    const files   = CDN_SAVER
+      ? (json.chapter.dataSaver || json.chapter.data)
+      : json.chapter.data;
+
+    const images = files.map(f =>
+      CDN_SAVER
+        ? `${base}/data-saver/${hash}/${f}`
+        : `${base}/data/${hash}/${f}`
+    );
+
+    renderChapter(images);
+    updateNav();
+  } catch (e) {
+    showError("Erreur de chargement", `Impossible de récupérer les images : ${e.message}`);
+  }
+}
+
+// ──────────────────────────────────────────────
+// Rendu des images
+// ──────────────────────────────────────────────
+function renderChapter(images) {
+  const reader = document.getElementById("reader");
+  reader.innerHTML = "";
+
+  images.forEach((src, i) => {
+    const img = document.createElement("img");
+    img.src     = src;
+    img.alt     = `Page ${i + 1}`;
+    img.loading = i < 3 ? "eager" : "lazy";
+    img.onerror = () => img.classList.add("broken");
+    reader.appendChild(img);
+  });
+
+  document.getElementById("state").style.display    = "none";
+  reader.style.display                              = "flex";
+  document.getElementById("bottomnav").style.display = "flex";
+
+  scrollTo(0, 0);
+}
+
+// ──────────────────────────────────────────────
+// Navigation prev / next
+// ──────────────────────────────────────────────
+function navChapter(dir) {
+  const next = curIdx + dir;
+  if (next < 0 || next >= chapters.length) return;
+  loadChapter(chapters[next].id, next);
+}
+
+function updateNav() {
+  const hasPrev = curIdx > 0;
+  const hasNext = curIdx < chapters.length - 1;
+  ["btn-prev","btn-prev2"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !hasPrev;
+  });
+  ["btn-next","btn-next2"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !hasNext;
+  });
+}
+
+// ──────────────────────────────────────────────
+// Helpers d'état
+// ──────────────────────────────────────────────
+function setState(type, title, msg) {
+  const s = document.getElementById("state");
+  if (type === "loading") {
+    s.innerHTML = `<div class="spinner"></div><h2>${title}</h2><p>${msg}</p>`;
+  } else {
+    s.innerHTML = `<h2>⚠️ ${title}</h2><p>${msg}</p>
+      <a href="/catalogue-fr.html" class="btn" style="margin-top:8px">← Retour au catalogue</a>`;
+  }
+  s.style.display = "flex";
+  document.getElementById("reader").style.display     = "none";
+  document.getElementById("bottomnav").style.display  = "none";
+}
+
+function showError(title, msg) {
+  setState("error", title, msg);
+}
+</script>
+</body>
+</html>

@@ -22,7 +22,7 @@
           <span class="px-2 py-0.5 bg-emerald-900/30 border border-emerald-800/40 text-emerald-400 text-xs font-bold rounded-full">Francophone</span>
         </div>
         <h1 class="text-3xl font-black text-white">Catalogue VF <span class="text-blue-400">·</span> Sites Francophones</h1>
-        <p class="text-slate-400 mt-1 text-sm">Toutes les œuvres disponibles en français sur les sites scantrad. Cliquez pour lire sur le site source.</p>
+        <p class="text-slate-400 mt-1 text-sm">Toutes les œuvres disponibles en français. MangaDex → lecture intégrée sur ce site. Autres sources → lien externe.</p>
       </div>
       <div class="text-right text-sm text-slate-500" id="meta-info">
         Chargement…
@@ -125,7 +125,20 @@ function statutBadgeFr(statut) {
 }
 
 // ── Render card ──────────────────────────────────────
+function cardLink(oeuvre) {
+  // MangaDex avec lecteur intégré → on lit sur scanaddiction
+  if (oeuvre.lecteurIntegre && oeuvre.mangadexId) {
+    return `/lecteur-fr.html?id=${oeuvre.mangadexId}`;
+  }
+  // Autres sources → site externe
+  return oeuvre.url;
+}
+
 function renderCard(oeuvre) {
+  const href    = cardLink(oeuvre);
+  const isLocal = href.startsWith('/');
+  const target  = isLocal ? '_self' : '_blank';
+
   const cover = oeuvre.cover
     ? `<img src="${oeuvre.cover}" alt="${oeuvre.titre}" loading="lazy"
           class="absolute inset-0 w-full h-full object-cover"
@@ -143,8 +156,13 @@ function renderCard(oeuvre) {
     ? `<span class="text-slate-500 text-xs">Ch. ${oeuvre.dernierChapitre}</span>`
     : '';
 
+  // Badge lecteur intégré vs source externe
+  const readerBadge = isLocal
+    ? `<span class="text-[10px] bg-violet-900/70 text-violet-300 px-1.5 py-0.5 rounded font-bold border border-violet-700/40">▶ Lire ici</span>`
+    : `<span class="text-[10px] bg-black/60 text-slate-300 px-1.5 py-0.5 rounded font-medium">↗ ${oeuvre.sourceNom || ''}</span>`;
+
   return `
-<a href="${oeuvre.url}" target="_blank" rel="noopener noreferrer"
+<a href="${href}" ${isLocal ? '' : 'rel="noopener noreferrer"'} target="${target}"
    class="card-oeuvre group block bg-[#111120] border border-[#1e1e35] rounded-2xl overflow-hidden
           hover:border-blue-600/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-200">
   <!-- Cover -->
@@ -157,11 +175,8 @@ function renderCard(oeuvre) {
     <div class="absolute top-2 right-2">
       ${statutBadgeFr(oeuvre.statut || 'en cours')}
     </div>
-    <!-- Source badge -->
     <div class="absolute bottom-2 right-2">
-      <span class="text-[10px] bg-black/60 text-slate-300 px-1.5 py-0.5 rounded font-medium">
-        ${oeuvre.sourceNom || ''}
-      </span>
+      ${readerBadge}
     </div>
   </div>
   <!-- Infos -->
@@ -239,29 +254,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Tri
     list.sort((a, b) => {
       if (sortBy === 'note')     return (b.note || 0) - (a.note || 0);
-      if (sortBy === 'chapitres') return (b.dernierChapitre || 0) - (a.dernierChapitre || 0);
-      return a.titre.localeCompare(b.titre, 'fr');
-    });
-
-    countEl.textContent = `${list.length} résultat${list.length !== 1 ? 's' : ''}`;
-
-    if (!list.length) {
-      grid.classList.add('hidden');
-      empty.classList.remove('hidden');
-      return;
-    }
-    empty.classList.add('hidden');
-    grid.classList.remove('hidden');
-    grid.innerHTML = list.map(renderCard).join('');
-  }
-
-  // Events
-  ['search','filter-type','filter-statut','filter-source','sort'].forEach(id => {
-    document.getElementById(id).addEventListener('input', render);
-  });
-
-  render();
-});
-</script>
-</body>
-</html>
+      if (sortBy === 'chapitres') return (b.dernierChapitre || 
