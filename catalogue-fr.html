@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalogue Francophone — Scanaddiction</title>
+  <meta name="description" content="Catalogue agrégé de manhwa, webtoon et manga disponibles en français sur les sites scantrad francophones.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-[#080810] text-slate-100 min-h-screen">
+
+<div id="nav-placeholder"></div>
+
+<!-- HERO -->
+<section class="border-b border-[#1e1e35] bg-[#0c0c18] pt-10 pb-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex flex-col sm:flex-row sm:items-end gap-4">
+      <div class="flex-1">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-2 py-0.5 bg-blue-900/40 border border-blue-800/50 text-blue-300 text-xs font-bold rounded-full">Agrégateur</span>
+          <span class="px-2 py-0.5 bg-emerald-900/30 border border-emerald-800/40 text-emerald-400 text-xs font-bold rounded-full">Francophone</span>
+        </div>
+        <h1 class="text-3xl font-black text-white">Catalogue VF <span class="text-blue-400">·</span> Sites Francophones</h1>
+        <p class="text-slate-400 mt-1 text-sm">Toutes les œuvres disponibles en français sur les sites scantrad. Cliquez pour lire sur le site source.</p>
+      </div>
+      <div class="text-right text-sm text-slate-500" id="meta-info">
+        Chargement…
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FILTRES -->
+<div class="sticky top-0 z-30 bg-[#0a0a14]/95 backdrop-blur border-b border-[#1e1e35]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap gap-2 items-center">
+    <!-- Search -->
+    <input id="search" type="search" placeholder="Rechercher…"
+      class="flex-1 min-w-[160px] bg-[#111120] border border-[#2a2a45] text-slate-100 placeholder-slate-500 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-600">
+
+    <!-- Type -->
+    <select id="filter-type" class="bg-[#111120] border border-[#2a2a45] text-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
+      <option value="">Tous les types</option>
+      <option value="manhwa">Manhwa</option>
+      <option value="manga">Manga</option>
+      <option value="manhua">Manhua</option>
+      <option value="webtoon">Webtoon</option>
+    </select>
+
+    <!-- Statut -->
+    <select id="filter-statut" class="bg-[#111120] border border-[#2a2a45] text-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
+      <option value="">Tous statuts</option>
+      <option value="en cours">En cours</option>
+      <option value="terminé">Terminé</option>
+      <option value="pause">Pause</option>
+    </select>
+
+    <!-- Source -->
+    <select id="filter-source" class="bg-[#111120] border border-[#2a2a45] text-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
+      <option value="">Toutes les sources</option>
+    </select>
+
+    <!-- Sort -->
+    <select id="sort" class="bg-[#111120] border border-[#2a2a45] text-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
+      <option value="titre">A → Z</option>
+      <option value="note">Note</option>
+      <option value="chapitres">Chapitres</option>
+    </select>
+
+    <span id="count" class="text-xs text-slate-500 ml-auto"></span>
+  </div>
+</div>
+
+<!-- GRILLE -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+  <!-- Skeleton -->
+  <div id="skeleton-grid" class="catalogue-grid">
+    <script>
+      for(let i=0;i<24;i++) document.write('<div class="skeleton h-72 rounded-2xl"></div>');
+    </script>
+  </div>
+  <!-- Grille réelle -->
+  <div id="catalogue-grid" class="catalogue-grid hidden"></div>
+  <!-- Vide -->
+  <div id="empty-state" class="hidden text-center py-24 text-slate-500">
+    <div class="text-5xl mb-4">🔍</div>
+    <p class="text-lg font-semibold">Aucun résultat</p>
+    <p class="text-sm mt-1">Essayez de modifier vos filtres</p>
+  </div>
+  <!-- Erreur -->
+  <div id="error-state" class="hidden text-center py-24 text-slate-500">
+    <div class="text-5xl mb-4">⚠️</div>
+    <p class="text-lg font-semibold">Catalogue non disponible</p>
+    <p class="text-sm mt-1">Le catalogue sera généré lors du premier scraping automatique (chaque nuit à 3h UTC).</p>
+    <p class="text-sm mt-3 text-slate-600">
+      En attendant, visitez directement
+      <a href="https://raijin-scans.fr" target="_blank" rel="noopener" class="text-blue-400 hover:underline">raijin-scans.fr</a>
+    </p>
+  </div>
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="/js/app.js"></script>
+<script>
+// ── Type badges ──────────────────────────────────────
+function typeBadgeFr(type) {
+  const map = {
+    manhwa : 'bg-blue-900/40 text-blue-400 border-blue-800/50',
+    manhua : 'bg-orange-900/40 text-orange-400 border-orange-800/50',
+    manga  : 'bg-purple-900/40 text-purple-400 border-purple-800/50',
+    webtoon: 'bg-teal-900/40 text-teal-400 border-teal-800/50',
+  };
+  const cls = map[type] || 'bg-slate-800 text-slate-400 border-slate-700/50';
+  return `<span class="px-1.5 py-0.5 rounded text-[11px] font-bold border ${cls}">${type}</span>`;
+}
+
+function statutBadgeFr(statut) {
+  const map = {
+    'en cours': 'text-emerald-400',
+    'terminé' : 'text-slate-400',
+    'pause'   : 'text-amber-400',
+  };
+  return `<span class="${map[statut] || 'text-slate-400'} text-[11px] font-semibold">${statut}</span>`;
+}
+
+// ── Render card ──────────────────────────────────────
+function renderCard(oeuvre) {
+  const cover = oeuvre.cover
+    ? `<img src="${oeuvre.cover}" alt="${oeuvre.titre}" loading="lazy"
+          class="absolute inset-0 w-full h-full object-cover"
+          onerror="this.style.display='none'">`
+    : '';
+
+  const genres = (oeuvre.genres || []).slice(0, 3)
+    .map(g => `<span class="badge-genre">${g}</span>`).join('');
+
+  const noteStar = oeuvre.note
+    ? `<span class="text-amber-400 text-xs">★ ${oeuvre.note.toFixed(1)}</span>`
+    : '';
+
+  const dernier = oeuvre.dernierChapitre
+    ? `<span class="text-slate-500 text-xs">Ch. ${oeuvre.dernierChapitre}</span>`
+    : '';
+
+  return `
+<a href="${oeuvre.url}" target="_blank" rel="noopener noreferrer"
+   class="card-oeuvre group block bg-[#111120] border border-[#1e1e35] rounded-2xl overflow-hidden
+          hover:border-blue-600/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-200">
+  <!-- Cover -->
+  <div class="relative h-48 bg-[#0c0c18] overflow-hidden">
+    ${cover}
+    <div class="absolute inset-0 bg-gradient-to-t from-[#111120] via-transparent to-transparent opacity-60"></div>
+    <div class="absolute top-2 left-2 flex gap-1">
+      ${typeBadgeFr(oeuvre.type || 'manhwa')}
+    </div>
+    <div class="absolute top-2 right-2">
+      ${statutBadgeFr(oeuvre.statut || 'en cours')}
+    </div>
+    <!-- Source badge -->
+    <div class="absolute bottom-2 right-2">
+      <span class="text-[10px] bg-black/60 text-slate-300 px-1.5 py-0.5 rounded font-medium">
+        ${oeuvre.sourceNom || ''}
+      </span>
+    </div>
+  </div>
+  <!-- Infos -->
+  <div class="p-3">
+    <h3 class="font-bold text-sm text-slate-100 leading-tight line-clamp-2 mb-1
+               group-hover:text-blue-300 transition-colors">
+      ${oeuvre.titre}
+    </h3>
+    <div class="flex items-center gap-2 mb-2">
+      ${noteStar}
+      ${dernier}
+    </div>
+    <div class="flex flex-wrap gap-1">
+      ${genres}
+    </div>
+  </div>
+</a>`;
+}
+
+// ── Main ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  const grid    = document.getElementById('catalogue-grid');
+  const skeleton= document.getElementById('skeleton-grid');
+  const empty   = document.getElementById('empty-state');
+  const errDiv  = document.getElementById('error-state');
+  const metaEl  = document.getElementById('meta-info');
+  const countEl = document.getElementById('count');
+
+  let allOeuvres = [];
+
+  // Fetch catalogue
+  try {
+    const r = await fetch('/data/catalogue-fr.json');
+    if (!r.ok) throw new Error('404');
+    const data = await r.json();
+    allOeuvres = data.oeuvres || [];
+
+    // Meta
+    const d = new Date(data.lastUpdate);
+    metaEl.textContent = `${data.total} œuvres · Mis à jour ${d.toLocaleDateString('fr-FR', {day:'numeric',month:'short',year:'numeric'})}`;
+
+    // Remplir le filtre source
+    const sourceSelect = document.getElementById('filter-source');
+    (data.sources || []).forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      sourceSelect.appendChild(opt);
+    });
+  } catch(e) {
+    skeleton.classList.add('hidden');
+    errDiv.classList.remove('hidden');
+    return;
+  }
+
+  skeleton.classList.add('hidden');
+
+  // ── Filtres & rendu ──────────────────────────────────
+  function render() {
+    const q      = document.getElementById('search').value.toLowerCase();
+    const type   = document.getElementById('filter-type').value;
+    const statut = document.getElementById('filter-statut').value;
+    const source = document.getElementById('filter-source').value;
+    const sortBy = document.getElementById('sort').value;
+
+    let list = allOeuvres.filter(o => {
+      if (q && !o.titre.toLowerCase().includes(q) &&
+          !(o.synopsis || '').toLowerCase().includes(q)) return false;
+      if (type   && o.type   !== type)   return false;
+      if (statut && o.statut !== statut) return false;
+      if (source && o.sourceNom !== source) return false;
+      return true;
+    });
+
+    // Tri
+    list.sort((a, b) => {
+      if (sortBy === 'note')     return (b.note || 0) - (a.note || 0);
+      if (sortBy === 'chapitres') return (b.dernierChapitre || 0) - (a.dernierChapitre || 0);
+      return a.titre.localeCompare(b.titre, 'fr');
+    });
+
+    countEl.textContent = `${list.length} résultat${list.length !== 1 ? 's' : ''}`;
+
+    if (!list.length) {
+      grid.classList.add('hidden');
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    grid.classList.remove('hidden');
+    grid.innerHTML = list.map(renderCard).join('');
+  }
+
+  // Events
+  ['search','filter-type','filter-statut','filter-source','sort'].forEach(id => {
+    document.getElementById(id).addEventListener('input', render);
+  });
+
+  render();
+});
+</script>
+</body>
+</html>

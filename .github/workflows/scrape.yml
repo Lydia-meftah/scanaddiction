@@ -1,0 +1,62 @@
+name: 🤖 Mise à jour catalogue
+
+on:
+  schedule:
+    # Chaque nuit à 3h00 UTC (5h Paris heure d'été)
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    # Permet de lancer manuellement depuis l'onglet Actions sur GitHub
+
+jobs:
+  scrape:
+    name: Scraper les sites francophones
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: write   # nécessaire pour git push
+
+    steps:
+      - name: 📥 Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install dependencies
+        run: pip install requests beautifulsoup4 lxml
+
+      - name: 🕷️ Run scraper
+        run: python scraper.py
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: 📊 Vérification du JSON
+        run: |
+          python -c "
+          import json, sys
+          with open('data/catalogue-fr.json') as f:
+            data = json.load(f)
+          print(f'✅ {data[\"total\"]} oeuvres scrappées')
+          print(f'   Sources: {data[\"sources\"]}')
+          print(f'   Mise à jour: {data[\"lastUpdate\"]}')
+          if data['total'] < 5:
+            print('⚠️  Moins de 5 oeuvres — vérifier le scraper')
+            sys.exit(1)
+          "
+
+      - name: 💾 Commit & Push catalogue mis à jour
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/catalogue-fr.json
+          if git diff --staged --quiet; then
+            echo "ℹ️  Aucun changement dans le catalogue"
+          else
+            COUNT=$(python -c "import json; d=json.load(open('data/catalogue-fr.json')); print(d['total'])")
+            git commit -m "🤖 Catalogue mis à jour — ${COUNT} œuvres [$(date +'%Y-%m-%d')]"
+            git push
+            echo "✅ Catalogue poussé sur GitHub → Cloudflare redéploie automatiquement"
+          fi
