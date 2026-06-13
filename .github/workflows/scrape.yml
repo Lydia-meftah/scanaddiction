@@ -2,10 +2,8 @@ name: 🤖 Mise à jour catalogue
 
 on:
   schedule:
-    # Chaque nuit à 3h00 UTC (5h Paris heure d'été)
     - cron: '0 3 * * *'
   workflow_dispatch:
-    # Permet de lancer manuellement depuis l'onglet Actions sur GitHub
 
 jobs:
   scrape:
@@ -14,7 +12,23 @@ jobs:
     timeout-minutes: 45
 
     permissions:
-      contents: write   # nécessaire pour git push
+      contents: write
+
+    # ── FlareSolverr : résout les challenges Cloudflare JS ─────────────────
+    services:
+      flaresolverr:
+        image: ghcr.io/flaresolverr/flaresolverr:latest
+        ports:
+          - 8191:8191
+        env:
+          LOG_LEVEL: info
+          BROWSER_TIMEOUT: 40000
+        options: >-
+          --health-cmd "curl -sf http://localhost:8191/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 30s
 
     steps:
       - name: 📥 Checkout repo
@@ -26,12 +40,26 @@ jobs:
           python-version: '3.11'
 
       - name: 📦 Install dependencies
-        run: pip install requests cloudscraper beautifulsoup4 lxml
+        run: pip install requests beautifulsoup4 lxml
+
+      - name: ⏳ Attendre FlareSolverr
+        run: |
+          echo "Attente que FlareSolverr soit prêt…"
+          for i in $(seq 1 20); do
+            if curl -sf http://localhost:8191/health > /dev/null 2>&1; then
+              echo "✅ FlareSolverr prêt (tentative $i)"
+              break
+            fi
+            echo "  tentative $i/20…"
+            sleep 5
+          done
+          curl -s http://localhost:8191/health | python3 -m json.tool || true
 
       - name: 🕷️ Run scraper
         run: python scraper.py
         env:
           PYTHONUNBUFFERED: "1"
+          FLARESOLVERR_URL: "http://localhost:8191/v1"
 
       - name: 📊 Vérification du JSON
         run: |
@@ -40,22 +68,4 @@ jobs:
           with open('data/catalogue-fr.json') as f:
             data = json.load(f)
           print(f'✅ {data[\"total\"]} oeuvres scrappées')
-          print(f'   Sources: {data[\"sources\"]}')
-          print(f'   Mise à jour: {data[\"lastUpdate\"]}')
-          if data['total'] == 0:
-            print('❌ Zéro oeuvre — toutes les sources bloquées')
-            sys.exit(1)
-          elif data['total'] < 20:
-            print(f'⚠️  Seulement {data[\"total\"]} oeuvres — sources partiellement bloquées')
-          "
-
-      - name: 💾 Commit & Push catalogue mis à jour
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/catalogue-fr.json
-          if git diff --staged --quiet; then
-            echo "ℹ️  Aucun changement dans le catalogue"
-          else
-            COUNT=$(python -c "import json; d=json.load(open('data/catalogue-fr.json')); print(d['total'])")
-            git commit -m "🤖 Catalogue mis à jour — ${COUNT} œuvres [$
+          print(f'   Sources: {data[\"sources\"
