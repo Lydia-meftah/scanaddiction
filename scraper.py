@@ -2,17 +2,9 @@
 """
 scraper.py - Catalogue francophone (sources autorisees)
 
-Ce scraper construit le catalogue a partir d'APIs publiques et autorisees,
-concues pour un usage par des applications tierces :
-
-  - AniList GraphQL API (https://anilist.co)  -> metadonnees manga/manhwa/manhua
-    (titres, couvertures, synopsis, genres, score, statut, chapitres)
-
-Aucune protection anti-bot n'est contournee : on utilise uniquement des
-points d'acces API documentes et destines a etre consommes par des tiers.
-
-Le JSON genere conserve le meme schema que precedemment afin de rester
-compatible avec le front-end (data/catalogue-fr.json).
+APIs publiques utilisees :
+  - AniList GraphQL  (anilist.co)   → manga/manhwa/manhua populaires
+  - MangaDex REST    (mangadex.org) → manga disponibles en français
 """
 
 import json
@@ -27,22 +19,25 @@ import requests
 # -------------------------------------------------------------------
 # Config
 # -------------------------------------------------------------------
-ANILIST_URL = "https://graphql.anilist.co"
-OUTPUT_FILE = os.path.join(os.path.dirname(__file__), "data", "catalogue-fr.json")
-
-PER_PAGE = 50          # max autorise par AniList
-MAX_PAGES = 6          # 6 * 50 = 300 oeuvres
-DELAY = 1.0            # pause entre requetes (respecte le rate-limit AniList)
+OUTPUT_FILE  = os.path.join(os.path.dirname(__file__), "data", "catalogue-fr.json")
 HTTP_TIMEOUT = 30
+DELAY        = 1.2   # pause entre requetes (rate-limits des deux APIs)
 
 HEADERS = {
     "Content-Type": "application/json",
-    "Accept": "application/json",
-    "User-Agent": "Scanaddiction-catalogue/1.0 (catalogue francophone)",
+    "Accept":       "application/json",
+    "User-Agent":   "Scanaddiction-catalogue/1.0 (catalogue francophone)",
 }
 
-# Requete GraphQL : manga populaires, tries par popularite.
-QUERY = """
+
+# ===================================================================
+# SOURCE 1 — AniList GraphQL
+# ===================================================================
+ANILIST_URL = "https://graphql.anilist.co"
+ANILIST_PER_PAGE = 50
+ANILIST_MAX_PAGES = 8   # 8 × 50 = 400 oeuvres
+
+ANILIST_QUERY = """
 query ($page: Int, $perPage: Int) {
   Page(page: $page, perPage: $perPage) {
     media(type: MANGA, sort: POPULARITY_DESC) {
@@ -62,131 +57,246 @@ query ($page: Int, $perPage: Int) {
 }
 """
 
-# Mapping pays d'origine -> type d'oeuvre
-TYPE_PAR_PAYS = {
-    "JP": "manga",
-    "KR": "manhwa",
-    "CN": "manhua",
-    "TW": "manhua",
-}
-
+TYPE_PAR_PAYS = {"JP": "manga", "KR": "manhwa", "CN": "manhua", "TW": "manhua"}
 STATUT_MAP = {
-    "RELEASING": "en cours",
-    "FINISHED": "termine",
-    "HIATUS": "pause",
-    "CANCELLED": "annule",
-    "NOT_YET_RELEASED": "a venir",
+    "RELEASING":        "en cours",
+    "FINISHED":         "terminé",
+    "HIATUS":           "pause",
+    "CANCELLED":        "annulé",
+    "NOT_YET_RELEASED": "à venir",
 }
 
 
-# -------------------------------------------------------------------
-# Helpers
-# -------------------------------------------------------------------
-def clean_text(txt):
+def clean_html(txt):
     if not txt:
         return ""
-    # AniList renvoie parfois des balises <br>, <i>, etc. dans la description
     txt = re.sub(r"<[^>]+>", " ", txt)
-    txt = re.sub(r"\s+", " ", txt).strip()
-    return txt
+    return re.sub(r"\s+", " ", txt).strip()
 
 
-def fetch_page(page):
-    """Recupere une page de resultats via l'API GraphQL AniList."""
-    payload = {"query": QUERY, "variables": {"page": page, "perPage": PER_PAGE}}
+def anilist_fetch_page(page):
+    payload = {
+        "query": ANILIST_QUERY,
+        "variables": {"page": page, "perPage": ANILIST_PER_PAGE},
+    }
     try:
         r = requests.post(ANILIST_URL, json=payload, headers=HEADERS, timeout=HTTP_TIMEOUT)
+        if r.status_code == 429:
+            print(f"  AniList rate-limit, pause 60s…")
+            time.sleep(60)
+            r = requests.post(ANILIST_URL, json=payload, headers=HEADERS, timeout=HTTP_TIMEOUT)
         if r.status_code != 200:
             print(f"  AniList HTTP {r.status_code} (page {page})")
             return []
-        data = r.json()
-        media = data.get("data", {}).get("Page", {}).get("media", [])
-        print(f"  AniList page {page}: {len(media)} oeuvres")
-        return media
+        return r.json().get("data", {}).get("Page", {}).get("media", [])
     except Exception as e:
         print(f"  AniList erreur page {page}: {e}")
         return []
 
 
-def map_media(m):
-    """Transforme une oeuvre AniList vers le schema du catalogue."""
+def anilist_map(m):
     titles = m.get("title") or {}
     titre = titles.get("romaji") or titles.get("english") or titles.get("native") or "Sans titre"
-
-    staff_nodes = (m.get("staff") or {}).get("nodes") or []
-    auteur = ""
-    if staff_nodes:
-        auteur = (staff_nodes[0].get("name") or {}).get("full", "") or ""
-
+    staff = ((m.get("staff") or {}).get("nodes") or [{}])[0]
+    auteur = (staff.get("name") or {}).get("full", "") or ""
     score = m.get("averageScore")
-    note = round(score / 10.0, 1) if isinstance(score, (int, float)) else 0.0
-
-    pays = m.get("countryOfOrigin") or "JP"
-    type_oeuvre = TYPE_PAR_PAYS.get(pays, "manga")
-
-    statut = STATUT_MAP.get(m.get("status") or "", "en cours")
-
-    cover = (m.get("coverImage") or {}).get("large", "") or ""
-
+    note  = round(score / 10.0, 1) if isinstance(score, (int, float)) else 0.0
     return {
-        "id": str(m.get("id", "")),
-        "titre": titre,
-        "url": m.get("siteUrl", "") or "",
-        "cover": cover,
-        "type": type_oeuvre,
-        "statut": statut,
-        "synopsis": clean_text(m.get("description")),
-        "genres": m.get("genres") or [],
-        "auteur": auteur,
-        "note": note,
+        "id":              f"al-{m['id']}",
+        "titre":           titre,
+        "url":             m.get("siteUrl") or "",
+        "cover":           (m.get("coverImage") or {}).get("large", "") or "",
+        "type":            TYPE_PAR_PAYS.get(m.get("countryOfOrigin") or "JP", "manga"),
+        "statut":          STATUT_MAP.get(m.get("status") or "", "en cours"),
+        "synopsis":        clean_html(m.get("description"))[:600],
+        "genres":          m.get("genres") or [],
+        "auteur":          auteur,
+        "note":            note,
         "dernierChapitre": m.get("chapters") or 0,
-        "sourceNom": "AniList",
-        "sourceUrl": "https://anilist.co",
+        "sourceNom":       "AniList",
+        "sourceUrl":       "https://anilist.co",
     }
 
 
 def scrape_anilist():
-    """Recupere les oeuvres populaires depuis AniList."""
-    print("\n[AniList] Recuperation des metadonnees (API GraphQL autorisee)")
-    items = []
-    seen = set()
-    for page in range(1, MAX_PAGES + 1):
-        media = fetch_page(page)
+    print("\n📚 [AniList] API GraphQL — manga populaires")
+    items, seen = [], set()
+    for page in range(1, ANILIST_MAX_PAGES + 1):
+        media = anilist_fetch_page(page)
         if not media:
             break
-        for m in media:
-            mid = m.get("id")
-            if mid in seen:
-                continue
-            seen.add(mid)
-            items.append(map_media(m))
+        new = [m for m in media if m.get("id") not in seen]
+        for m in new:
+            seen.add(m["id"])
+            items.append(anilist_map(m))
+        print(f"  page {page}: {len(media)} → cumul {len(items)}")
         time.sleep(DELAY)
-    print(f"-> Total: {len(items)} oeuvres depuis AniList")
+    print(f"  → {len(items)} oeuvres AniList")
     return items
 
 
+# ===================================================================
+# SOURCE 2 — MangaDex REST (manga traduits en français)
+# ===================================================================
+MANGADEX_URL = "https://api.mangadex.org"
+MANGADEX_LIMIT     = 100
+MANGADEX_MAX_PAGES = 6   # 6 × 100 = 600 oeuvres potentielles
+
+MDX_TYPE_MAP = {
+    "manga":    "manga",
+    "manhwa":   "manhwa",
+    "manhua":   "manhua",
+    "doujinshi":"manga",
+    "novel":    "manga",
+    "one_shot": "manga",
+}
+MDX_STATUT_MAP = {
+    "ongoing":    "en cours",
+    "completed":  "terminé",
+    "hiatus":     "pause",
+    "cancelled":  "annulé",
+}
+
+
+def mdx_fetch_page(offset):
+    params = {
+        "availableTranslatedLanguage[]": "fr",
+        "limit":       MANGADEX_LIMIT,
+        "offset":      offset,
+        "order[followedCount]": "desc",
+        "includes[]":  "cover_art",
+        "contentRating[]": ["safe", "suggestive"],
+    }
+    try:
+        r = requests.get(
+            f"{MANGADEX_URL}/manga",
+            params=params,
+            headers={"User-Agent": HEADERS["User-Agent"]},
+            timeout=HTTP_TIMEOUT,
+        )
+        if r.status_code == 429:
+            print(f"  MangaDex rate-limit, pause 60s…")
+            time.sleep(60)
+            r = requests.get(f"{MANGADEX_URL}/manga", params=params,
+                             headers={"User-Agent": HEADERS["User-Agent"]}, timeout=HTTP_TIMEOUT)
+        if r.status_code != 200:
+            print(f"  MangaDex HTTP {r.status_code} (offset {offset})")
+            return []
+        return r.json().get("data", [])
+    except Exception as e:
+        print(f"  MangaDex erreur offset {offset}: {e}")
+        return []
+
+
+def mdx_cover_url(manga_id, relationships):
+    for rel in (relationships or []):
+        if rel.get("type") == "cover_art":
+            fname = (rel.get("attributes") or {}).get("fileName", "")
+            if fname:
+                return f"https://uploads.mangadex.org/covers/{manga_id}/{fname}.512.jpg"
+    return ""
+
+
+def mdx_best_title(attrs):
+    titles = attrs.get("title") or {}
+    for lang in ("fr", "en", "ja-ro", "ja"):
+        if titles.get(lang):
+            return titles[lang]
+    alt = attrs.get("altTitles") or []
+    for d in alt:
+        for lang in ("fr", "en"):
+            if d.get(lang):
+                return d[lang]
+    return next(iter(titles.values()), "Sans titre")
+
+
+def mdx_author(relationships):
+    for rel in (relationships or []):
+        if rel.get("type") in ("author", "artist"):
+            name = (rel.get("attributes") or {}).get("name", "")
+            if name:
+                return name
+    return ""
+
+
+def mdx_map(m):
+    attrs = m.get("attributes") or {}
+    mid   = m.get("id", "")
+    rels  = m.get("relationships") or []
+
+    desc_dict = attrs.get("description") or {}
+    synopsis  = clean_html(desc_dict.get("fr") or desc_dict.get("en") or "")[:600]
+
+    score = attrs.get("rating", {}).get("average") if isinstance(attrs.get("rating"), dict) else None
+    note  = round(float(score), 1) if score else 0.0
+
+    return {
+        "id":              f"mdx-{mid}",
+        "titre":           mdx_best_title(attrs),
+        "url":             f"https://mangadex.org/title/{mid}",
+        "cover":           mdx_cover_url(mid, rels),
+        "type":            MDX_TYPE_MAP.get(attrs.get("originalLanguage") and "manga" or
+                           MDX_TYPE_MAP.get(attrs.get("type", ""), "manga"), "manga"),
+        "statut":          MDX_STATUT_MAP.get(attrs.get("status") or "", "en cours"),
+        "synopsis":        synopsis,
+        "genres":          [
+            t.get("attributes", {}).get("name", {}).get("fr")
+            or t.get("attributes", {}).get("name", {}).get("en", "")
+            for t in (attrs.get("tags") or [])
+            if (t.get("attributes", {}).get("group") == "genre")
+        ][:6],
+        "auteur":          mdx_author(rels),
+        "note":            note,
+        "dernierChapitre": 0,
+        "sourceNom":       "MangaDex",
+        "sourceUrl":       "https://mangadex.org",
+    }
+
+
+def scrape_mangadex():
+    print("\n🌐 [MangaDex] API REST — manga disponibles en français")
+    items, seen = [], set()
+    for page in range(MANGADEX_MAX_PAGES):
+        offset = page * MANGADEX_LIMIT
+        data   = mdx_fetch_page(offset)
+        if not data:
+            print(f"  fin à offset {offset}")
+            break
+        new = [m for m in data if m.get("id") not in seen]
+        for m in new:
+            seen.add(m["id"])
+            items.append(mdx_map(m))
+        print(f"  offset {offset}: {len(data)} → cumul {len(items)}")
+        time.sleep(DELAY)
+    print(f"  → {len(items)} oeuvres MangaDex")
+    return items
+
+
+# ===================================================================
+# Catalogue
+# ===================================================================
 def build_catalogue(all_items):
-    """Deduplique et construit la structure finale du catalogue."""
     unique = {}
     for it in all_items:
-        key = it.get("id") or it.get("titre")
+        key = it.get("id")
         if key and key not in unique:
             unique[key] = it
-    oeuvres = list(unique.values())
+    oeuvres = sorted(unique.values(), key=lambda x: x["titre"].lower())
     return {
         "lastUpdate": datetime.now(timezone.utc).isoformat(),
-        "total": len(oeuvres),
-        "sources": sorted({i["sourceNom"] for i in oeuvres}),
-        "oeuvres": oeuvres,
+        "total":      len(oeuvres),
+        "sources":    sorted({i["sourceNom"] for i in oeuvres}),
+        "oeuvres":    oeuvres,
     }
 
 
 def main():
-    print("Scanaddiction - Scraper catalogue francophone")
+    print("🚀 Scanaddiction — Scraper catalogue francophone")
     print("=" * 55)
 
     all_items = []
     all_items.extend(scrape_anilist())
+    all_items.extend(scrape_mangadex())
 
     catalogue = build_catalogue(all_items)
 
@@ -195,10 +305,10 @@ def main():
         json.dump(catalogue, f, ensure_ascii=False, indent=2)
 
     print("=" * 55)
-    print(f"Catalogue genere: {OUTPUT_FILE}")
-    print(f"{catalogue['total']} oeuvres - sources: {catalogue['sources']}")
+    print(f"✅ {catalogue['total']} oeuvres — {catalogue['sources']}")
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
