@@ -361,12 +361,8 @@ async function initProxy(srcUrl, chapUrl) {
     }
     await loadChapterProxy(chapters[idx].url, idx);
   } catch (e) {
-    showErrorWithFallback(
-      "Impossible de charger les chapitres",
-      e.message,
-      srcUrl,
-      domain
-    );
+    showError("Impossible de charger les chapitres",
+      `Une erreur est survenue : ${e.message}`);
   }
 }
 
@@ -386,8 +382,8 @@ async function loadChapterProxy(chapUrl, idxHint) {
     renderChapter(data.images);
     updateNav();
   } catch (e) {
-    const domain = (() => { try { return new URL(chapUrl).hostname; } catch { return "source"; } })();
-    showErrorWithFallback("Impossible de charger les images", e.message, chapUrl, domain);
+    showError("Impossible de charger les images",
+      `Une erreur est survenue : ${e.message}`);
   }
 }
 
@@ -492,20 +488,7 @@ function setState(type, title, msg) {
 }
 
 function showError(title, msg) { setState("error", title, msg); }
-
-function showErrorWithFallback(title, msg, fallbackUrl, domain) {
-  const s = document.getElementById("state");
-  s.innerHTML = `
-    <h2>⚠️ ${title}</h2>
-    <p>${msg}</p>
-    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center">
-      <a href="${fallbackUrl}" target="_blank" rel="noopener" class="btn primary">↗ Lire sur ${domain}</a>
-      <a href="/catalogue-fr.html" class="btn">← Catalogue</a>
-    </div>`;
-  s.style.display = "flex";
-  document.getElementById("reader").style.display     = "none";
-  document.getElementById("bottomnav").style.display  = "none";
-}
 </script>
 </body>
 </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
