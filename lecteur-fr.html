@@ -162,6 +162,7 @@
       white-space: nowrap;
     }
   </style>
+  <script src="/js/tracking.js"></script>
 </head>
 <body>
 
@@ -246,6 +247,10 @@ async function initMangaDex(id, chapId) {
       "Ce manga n'a pas encore de chapitres traduits en français sur MangaDex.");
     return;
   }
+  // Tracking : ouverture lecteur
+  const titre = document.getElementById("hd-title").textContent || id;
+  window.SA_TRACK?.readerOpen(titre, "mangadex.org", "mangadex");
+
   let idx = 0;
   if (chapId) {
     const f = chapters.findIndex(c => c.id === chapId);
@@ -317,11 +322,14 @@ async function loadChapterMDX(chapId, idxHint) {
     const files = CDN_SAVER
       ? (json.chapter.dataSaver || json.chapter.data)
       : json.chapter.data;
-    renderChapter(files.map(f =>
+    const images = files.map(f =>
       CDN_SAVER ? `${base}/data-saver/${hash}/${f}` : `${base}/data/${hash}/${f}`
-    ));
+    );
+    renderChapter(images);
+    window.SA_TRACK?.chapterLoaded(chapters[idxHint]?.num ?? 0, images.length);
     updateNav();
   } catch (e) {
+    window.SA_TRACK?.chapterError("images_load", e.message);
     showError("Erreur de chargement", `Impossible de récupérer les images : ${e.message}`);
   }
 }
@@ -338,6 +346,7 @@ async function initProxy(srcUrl, chapUrl) {
   setMangaHeader(titre, "", domain);
   setBadge(domain);
   setState("loading", "Récupération des chapitres…", `Connexion à ${domain}…`);
+  window.SA_TRACK?.readerOpen(titre, domain, "proxy");
 
   try {
     const r = await fetch(`${PROXY}?url=${encodeURIComponent(srcUrl)}&mode=chapters`);
@@ -346,6 +355,7 @@ async function initProxy(srcUrl, chapUrl) {
     if (data.error) throw new Error(data.error);
     if (!data.chapters?.length) throw new Error("Aucun chapitre trouvé pour cette série.");
 
+    window.SA_TRACK?.sourcePerformance(domain, true, 0);
     chapters = data.chapters;
     buildSelect(chapters.map((c, i) => ({
       label: c.title || `Chapitre ${c.num}`,
@@ -380,8 +390,10 @@ async function loadChapterProxy(chapUrl, idxHint) {
     if (data.error) throw new Error(data.error);
     if (!data.images?.length) throw new Error("Aucune image trouvée dans ce chapitre.");
     renderChapter(data.images);
+    window.SA_TRACK?.chapterLoaded(chapters[idxHint]?.num ?? 0, data.images.length);
     updateNav();
   } catch (e) {
+    window.SA_TRACK?.chapterError("images_load", e.message);
     showError("Impossible de charger les images",
       `Une erreur est survenue : ${e.message}`);
   }
@@ -390,6 +402,7 @@ async function loadChapterProxy(chapUrl, idxHint) {
 function onChapterChange(val) {
   const idx = chapters.findIndex(c => (c.id ?? c.url) === val);
   if (idx < 0) return;
+  window.SA_TRACK?.chapterNavigate("select", chapters[idx]?.num ?? idx);
   if (mode === "mangadex") loadChapterMDX(val, idx);
   else loadChapterProxy(val, idx);
 }
@@ -412,6 +425,8 @@ function renderChapter(images) {
   reader.style.display                               = "flex";
   document.getElementById("bottomnav").style.display = "flex";
   scrollTo(0, 0);
+  // Activer le tracker de profondeur de scroll (jalons 25/50/75/100 %)
+  window.SA_TRACK?._initScrollTracker();
 }
 
 // ────────────────────────────────────────────────
@@ -421,6 +436,7 @@ function navChapter(dir) {
   const next = curIdx + dir;
   if (next < 0 || next >= chapters.length) return;
   const c = chapters[next];
+  window.SA_TRACK?.chapterNavigate(dir > 0 ? "next" : "prev", c.num ?? next);
   if (mode === "mangadex") loadChapterMDX(c.id, next);
   else loadChapterProxy(c.url, next);
 }

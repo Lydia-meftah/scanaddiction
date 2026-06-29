@@ -7,6 +7,7 @@
   <meta name="description" content="Catalogue agrégé de manhwa, webtoon et manga disponibles en français sur les sites scantrad francophones.">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/tracking.js"></script>
 </head>
 <body class="bg-[#080810] text-slate-100 min-h-screen">
 
@@ -168,8 +169,18 @@ function renderCard(oeuvre) {
     ? `<span class="text-[10px] bg-violet-900/70 text-violet-300 px-1.5 py-0.5 rounded font-bold border border-violet-700/40">▶ Lire ici</span>`
     : `<span class="text-[10px] bg-black/60 text-slate-300 px-1.5 py-0.5 rounded font-medium">↗ ${oeuvre.sourceNom || 'Source'}</span>`;
 
+  // Déterminer le reader_type pour le tracking
+  const readerType = (oeuvre.lecteurIntegre && oeuvre.mangadexId) ? 'mangadex'
+                   : PROXY_SOURCES.has(oeuvre.sourceNom) ? 'proxy'
+                   : 'external';
+  const trackClick = `SA_TRACK?.mangaClick(${JSON.stringify({
+    titre: oeuvre.titre, sourceNom: oeuvre.sourceNom,
+    type: oeuvre.type, statut: oeuvre.statut, id: oeuvre.id
+  })}, '${readerType}')`;
+
   return `
 <a href="${href}" ${isLocal ? '' : 'rel="noopener noreferrer"'} target="${target}"
+   onclick="${trackClick}"
    class="card-oeuvre group block bg-[#111120] border border-[#1e1e35] rounded-2xl overflow-hidden
           hover:border-blue-600/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-200">
   <!-- Cover -->
@@ -277,9 +288,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     grid.innerHTML = list.map(renderCard).join('');
   }
 
-  // Events
-  ['search','filter-type','filter-statut','filter-source','sort'].forEach(id => {
-    document.getElementById(id).addEventListener('input', render);
+  // Events filtres + tracking
+  document.getElementById('search').addEventListener('input', () => {
+    render();
+    const term = document.getElementById('search').value;
+    const count = parseInt(countEl.textContent) || 0;
+    if (term.length >= 2) SA_TRACK?.search(term, count);
+  });
+
+  document.getElementById('filter-type').addEventListener('input', () => {
+    render();
+    SA_TRACK?.filterApply('type', document.getElementById('filter-type').value);
+  });
+  document.getElementById('filter-statut').addEventListener('input', () => {
+    render();
+    SA_TRACK?.filterApply('statut', document.getElementById('filter-statut').value);
+  });
+  document.getElementById('filter-source').addEventListener('input', () => {
+    render();
+    SA_TRACK?.filterApply('source', document.getElementById('filter-source').value);
+  });
+  document.getElementById('sort').addEventListener('input', () => {
+    render();
+    SA_TRACK?.sortApply(document.getElementById('sort').value);
   });
 
   render();
