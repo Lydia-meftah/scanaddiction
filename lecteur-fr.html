@@ -150,8 +150,17 @@
       border-top: 1px solid var(--border);
     }
 
-    /* ── Erreur image (img cassée) ── */
     img.broken { display: none !important; }
+
+    .source-badge {
+      font-size: .72rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -160,15 +169,16 @@
   <a href="/catalogue-fr.html" class="home">✦ Scanaddiction</a>
   <span class="sep">›</span>
   <span id="manga-title">Chargement…</span>
-  <select id="chapter-select" style="display:none" onchange="loadChapter(this.value)">
+  <select id="chapter-select" style="display:none" onchange="onChapterChange(this.value)">
     <option>Chargement des chapitres…</option>
   </select>
   <button class="btn" id="btn-prev" disabled onclick="navChapter(-1)">◀</button>
   <button class="btn" id="btn-next" disabled onclick="navChapter(+1)">▶</button>
+  <span id="source-badge" class="source-badge" style="display:none"></span>
 </div>
 
 <div id="manga-header">
-  <img id="hd-cover" src="" alt="" />
+  <img id="hd-cover" src="" alt="" onerror="this.style.display='none'" />
   <div class="info">
     <h1 id="hd-title"></h1>
     <p  id="hd-meta"></p>
@@ -177,8 +187,8 @@
 
 <div id="state">
   <div class="spinner"></div>
-  <h2>Chargement du manga…</h2>
-  <p>Récupération des informations depuis MangaDex.</p>
+  <h2>Chargement…</h2>
+  <p>Récupération des informations.</p>
 </div>
 
 <div id="reader"></div>
@@ -190,53 +200,60 @@
 </div>
 
 <script>
-// ──────────────────────────────────────────────
+// ────────────────────────────────────────────────
 // Config
-// ──────────────────────────────────────────────
-const MDX = "https://api.mangadex.org";
-const CDN_SAVER = true; // data-saver (images compressées, plus rapide)
+// ────────────────────────────────────────────────
+const MDX      = "https://api.mangadex.org";
+const PROXY    = "/api/chapter";   // CF Pages Function
+const CDN_SAVER = true;
 
-// ──────────────────────────────────────────────
+// ────────────────────────────────────────────────
 // State
-// ──────────────────────────────────────────────
+// ────────────────────────────────────────────────
+let mode      = null;   // "mangadex" | "proxy"
 let mangaId   = null;
-let chapters  = [];    // [{id, num, title, vol}]
+let seriesUrl = null;
+let chapters  = [];     // [{id?, url?, num, title}]
 let curIdx    = -1;
 
-// ──────────────────────────────────────────────
+// ────────────────────────────────────────────────
 // Init
-// ──────────────────────────────────────────────
+// ────────────────────────────────────────────────
 window.addEventListener("DOMContentLoaded", async () => {
   const p = new URLSearchParams(location.search);
-  mangaId = p.get("id");
-  const chapId = p.get("chapter");
+  mangaId   = p.get("id");
+  seriesUrl = p.get("src");
 
-  if (!mangaId) {
-    showError("Manga introuvable", "Aucun identifiant manga fourni dans l'URL. Retourne au catalogue et clique sur un manga.");
-    return;
+  if (mangaId) {
+    mode = "mangadex";
+    await initMangaDex(mangaId, p.get("chapter"));
+  } else if (seriesUrl) {
+    mode = "proxy";
+    await initProxy(seriesUrl, p.get("chapter"));
+  } else {
+    showError("Manga introuvable", "Aucun identifiant fourni dans l'URL. Retourne au catalogue.");
   }
+});
 
-  await loadMangaInfo(mangaId);
-  await loadChapterList(mangaId);
-
-  if (chapters.length === 0) {
+// ────────────────────────────────────────────────
+// ══ MODE MANGADEX ══
+// ────────────────────────────────────────────────
+async function initMangaDex(id, chapId) {
+  await loadMangaInfo(id);
+  await loadChapterListMDX(id);
+  if (!chapters.length) {
     showError("Aucun chapitre FR disponible",
       "Ce manga n'a pas encore de chapitres traduits en français sur MangaDex.");
     return;
   }
-
-  // Chapitre cible : param URL ou premier chapitre
-  let targetIdx = 0;
+  let idx = 0;
   if (chapId) {
-    const found = chapters.findIndex(c => c.id === chapId);
-    if (found >= 0) targetIdx = found;
+    const f = chapters.findIndex(c => c.id === chapId);
+    if (f >= 0) idx = f;
   }
-  await loadChapter(chapters[targetIdx].id, targetIdx);
-});
+  await loadChapterMDX(chapters[idx].id, idx);
+}
 
-// ──────────────────────────────────────────────
-// Info manga
-// ──────────────────────────────────────────────
 async function loadMangaInfo(id) {
   try {
     const r = await fetch(`${MDX}/manga/${id}?includes[]=cover_art`);
@@ -245,35 +262,18 @@ async function loadMangaInfo(id) {
     const attrs = data.attributes || {};
     const t = attrs.title || {};
     const titre = t.fr || t.en || t["ja-ro"] || Object.values(t)[0] || "Sans titre";
-
-    // Cover
     const coverRel = (data.relationships || []).find(r => r.type === "cover_art");
     const coverFn  = coverRel?.attributes?.fileName || "";
-    const coverUrl = coverFn
-      ? `https://uploads.mangadex.org/covers/${id}/${coverFn}.512.jpg`
-      : "";
-
-    document.title = `${titre} — Scanaddiction`;
-    document.getElementById("manga-title").textContent = titre;
-    document.getElementById("hd-title").textContent   = titre;
-    document.getElementById("hd-meta").textContent    =
-      `${(attrs.status === "ongoing" ? "En cours" : "Terminé")} · MangaDex`;
-    if (coverUrl) document.getElementById("hd-cover").src = coverUrl;
-
-    document.getElementById("manga-header").style.display = "flex";
-  } catch (e) {
-    console.warn("loadMangaInfo:", e);
-  }
+    const coverUrl = coverFn ? `https://uploads.mangadex.org/covers/${id}/${coverFn}.512.jpg` : "";
+    setMangaHeader(titre, coverUrl, `${attrs.status === "ongoing" ? "En cours" : "Terminé"} · MangaDex`);
+    setBadge("MangaDex");
+  } catch (e) { console.warn("loadMangaInfo:", e); }
 }
 
-// ──────────────────────────────────────────────
-// Liste des chapitres
-// ──────────────────────────────────────────────
-async function loadChapterList(id) {
+async function loadChapterListMDX(id) {
   chapters = [];
   let offset = 0;
   const limit = 100;
-
   while (true) {
     const url = `${MDX}/manga/${id}/feed`
       + `?translatedLanguage[]=fr&order[chapter]=asc&limit=${limit}&offset=${offset}`
@@ -283,11 +283,9 @@ async function loadChapterList(id) {
     const json = await r.json();
     const data = json.data || [];
     if (!data.length) break;
-
     for (const ch of data) {
       const a = ch.attributes || {};
       const num = parseFloat(a.chapter) || 0;
-      // Dédupe: garde la version la mieux notée si même numéro
       const existing = chapters.findIndex(c => c.num === num);
       const entry = { id: ch.id, num, title: a.title || "", vol: a.volume || "" };
       if (existing >= 0) chapters[existing] = entry;
@@ -296,73 +294,116 @@ async function loadChapterList(id) {
     if (data.length < limit) break;
     offset += limit;
   }
-
-  // Tri croissant
   chapters.sort((a, b) => a.num - b.num);
-
-  // Peuple le <select>
-  const sel = document.getElementById("chapter-select");
-  sel.innerHTML = chapters.map((c, i) => {
-    const vol  = c.vol ? `Vol.${c.vol} ` : "";
+  buildSelect(chapters.map((c, i) => {
+    const vol  = c.vol  ? `Vol.${c.vol} ` : "";
     const name = c.title ? ` — ${c.title}` : "";
-    return `<option value="${c.id}" data-idx="${i}">${vol}Chapitre ${c.num}${name}</option>`;
-  }).join("");
-  sel.style.display = chapters.length ? "block" : "none";
+    return { label: `${vol}Chapitre ${c.num}${name}`, value: c.id, idx: i };
+  }));
 }
 
-// ──────────────────────────────────────────────
-// Charger un chapitre
-// ──────────────────────────────────────────────
-async function loadChapter(chapId, idxHint) {
-  // Trouver l'index si pas fourni
-  if (idxHint === undefined) {
-    idxHint = chapters.findIndex(c => c.id === chapId);
-  }
+async function loadChapterMDX(chapId, idxHint) {
+  if (idxHint === undefined) idxHint = chapters.findIndex(c => c.id === chapId);
   curIdx = idxHint;
-
-  // Sync select
-  const sel = document.getElementById("chapter-select");
-  sel.value = chapId;
-
-  // Mise à jour URL sans reload
-  const url = new URL(location.href);
-  url.searchParams.set("chapter", chapId);
-  history.replaceState(null, "", url.toString());
-
-  // État chargement
+  syncSelect(chapId);
+  syncUrl({ chapter: chapId });
   setState("loading", "Chargement du chapitre…", "Récupération des images depuis MangaDex.");
-
   try {
     const r = await fetch(`${MDX}/at-home/server/${chapId}`);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const json = await r.json();
-
-    const base    = json.baseUrl;
-    const hash    = json.chapter.hash;
-    const files   = CDN_SAVER
+    const base  = json.baseUrl;
+    const hash  = json.chapter.hash;
+    const files = CDN_SAVER
       ? (json.chapter.dataSaver || json.chapter.data)
       : json.chapter.data;
-
-    const images = files.map(f =>
-      CDN_SAVER
-        ? `${base}/data-saver/${hash}/${f}`
-        : `${base}/data/${hash}/${f}`
-    );
-
-    renderChapter(images);
+    renderChapter(files.map(f =>
+      CDN_SAVER ? `${base}/data-saver/${hash}/${f}` : `${base}/data/${hash}/${f}`
+    ));
     updateNav();
   } catch (e) {
     showError("Erreur de chargement", `Impossible de récupérer les images : ${e.message}`);
   }
 }
 
-// ──────────────────────────────────────────────
-// Rendu des images
-// ──────────────────────────────────────────────
+// ────────────────────────────────────────────────
+// ══ MODE PROXY (Sushiscan, Raijin, Crunchyscan…) ══
+// ────────────────────────────────────────────────
+async function initProxy(srcUrl, chapUrl) {
+  const slugM = srcUrl.match(/\/(?:catalogue|manga)\/([^/?#]+)\/?$/);
+  const slug  = slugM?.[1] ?? srcUrl.split('/').filter(Boolean).pop();
+  const titre = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const domain = new URL(srcUrl).hostname.replace(/^www\./, '');
+
+  setMangaHeader(titre, "", domain);
+  setBadge(domain);
+  setState("loading", "Récupération des chapitres…", `Connexion à ${domain}…`);
+
+  try {
+    const r = await fetch(`${PROXY}?url=${encodeURIComponent(srcUrl)}&mode=chapters`);
+    if (!r.ok) throw new Error(`Proxy HTTP ${r.status}`);
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    if (!data.chapters?.length) throw new Error("Aucun chapitre trouvé pour cette série.");
+
+    chapters = data.chapters;
+    buildSelect(chapters.map((c, i) => ({
+      label: c.title || `Chapitre ${c.num}`,
+      value: c.url,
+      idx: i,
+    })));
+
+    // Dernier chapitre par défaut, ou celui passé en paramètre
+    let idx = chapters.length - 1;
+    if (chapUrl) {
+      const f = chapters.findIndex(c => c.url === chapUrl);
+      if (f >= 0) idx = f;
+    }
+    await loadChapterProxy(chapters[idx].url, idx);
+  } catch (e) {
+    showErrorWithFallback(
+      "Impossible de charger les chapitres",
+      e.message,
+      srcUrl,
+      domain
+    );
+  }
+}
+
+async function loadChapterProxy(chapUrl, idxHint) {
+  if (idxHint === undefined) idxHint = chapters.findIndex(c => c.url === chapUrl);
+  curIdx = idxHint;
+  syncSelect(chapUrl);
+  syncUrl({ chapter: chapUrl });
+  setState("loading", "Chargement du chapitre…", "Récupération des images via proxy…");
+
+  try {
+    const r = await fetch(`${PROXY}?url=${encodeURIComponent(chapUrl)}&mode=chapter`);
+    if (!r.ok) throw new Error(`Proxy HTTP ${r.status}`);
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    if (!data.images?.length) throw new Error("Aucune image trouvée dans ce chapitre.");
+    renderChapter(data.images);
+    updateNav();
+  } catch (e) {
+    const domain = (() => { try { return new URL(chapUrl).hostname; } catch { return "source"; } })();
+    showErrorWithFallback("Impossible de charger les images", e.message, chapUrl, domain);
+  }
+}
+
+function onChapterChange(val) {
+  const idx = chapters.findIndex(c => (c.id ?? c.url) === val);
+  if (idx < 0) return;
+  if (mode === "mangadex") loadChapterMDX(val, idx);
+  else loadChapterProxy(val, idx);
+}
+
+// ────────────────────────────────────────────────
+// Rendu images
+// ────────────────────────────────────────────────
 function renderChapter(images) {
   const reader = document.getElementById("reader");
   reader.innerHTML = "";
-
   images.forEach((src, i) => {
     const img = document.createElement("img");
     img.src     = src;
@@ -371,21 +412,21 @@ function renderChapter(images) {
     img.onerror = () => img.classList.add("broken");
     reader.appendChild(img);
   });
-
-  document.getElementById("state").style.display    = "none";
-  reader.style.display                              = "flex";
+  document.getElementById("state").style.display     = "none";
+  reader.style.display                               = "flex";
   document.getElementById("bottomnav").style.display = "flex";
-
   scrollTo(0, 0);
 }
 
-// ──────────────────────────────────────────────
-// Navigation prev / next
-// ──────────────────────────────────────────────
+// ────────────────────────────────────────────────
+// Navigation
+// ────────────────────────────────────────────────
 function navChapter(dir) {
   const next = curIdx + dir;
   if (next < 0 || next >= chapters.length) return;
-  loadChapter(chapters[next].id, next);
+  const c = chapters[next];
+  if (mode === "mangadex") loadChapterMDX(c.id, next);
+  else loadChapterProxy(c.url, next);
 }
 
 function updateNav() {
@@ -401,9 +442,42 @@ function updateNav() {
   });
 }
 
-// ──────────────────────────────────────────────
-// Helpers d'état
-// ──────────────────────────────────────────────
+// ────────────────────────────────────────────────
+// Helpers UI
+// ────────────────────────────────────────────────
+function setMangaHeader(titre, cover, meta) {
+  document.title = `${titre} — Scanaddiction`;
+  document.getElementById("manga-title").textContent = titre;
+  document.getElementById("hd-title").textContent   = titre;
+  document.getElementById("hd-meta").textContent    = meta;
+  if (cover) document.getElementById("hd-cover").src = cover;
+  document.getElementById("manga-header").style.display = "flex";
+}
+
+function setBadge(label) {
+  const b = document.getElementById("source-badge");
+  b.textContent = label;
+  b.style.display = "inline";
+}
+
+function buildSelect(opts) {
+  const sel = document.getElementById("chapter-select");
+  sel.innerHTML = opts.map(o =>
+    `<option value="${o.value}" data-idx="${o.idx}">${o.label}</option>`
+  ).join("");
+  sel.style.display = opts.length ? "block" : "none";
+}
+
+function syncSelect(val) {
+  document.getElementById("chapter-select").value = val;
+}
+
+function syncUrl(params) {
+  const url = new URL(location.href);
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  history.replaceState(null, "", url.toString());
+}
+
 function setState(type, title, msg) {
   const s = document.getElementById("state");
   if (type === "loading") {
@@ -417,8 +491,20 @@ function setState(type, title, msg) {
   document.getElementById("bottomnav").style.display  = "none";
 }
 
-function showError(title, msg) {
-  setState("error", title, msg);
+function showError(title, msg) { setState("error", title, msg); }
+
+function showErrorWithFallback(title, msg, fallbackUrl, domain) {
+  const s = document.getElementById("state");
+  s.innerHTML = `
+    <h2>⚠️ ${title}</h2>
+    <p>${msg}</p>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center">
+      <a href="${fallbackUrl}" target="_blank" rel="noopener" class="btn primary">↗ Lire sur ${domain}</a>
+      <a href="/catalogue-fr.html" class="btn">← Catalogue</a>
+    </div>`;
+  s.style.display = "flex";
+  document.getElementById("reader").style.display     = "none";
+  document.getElementById("bottomnav").style.display  = "none";
 }
 </script>
 </body>

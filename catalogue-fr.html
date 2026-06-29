@@ -124,13 +124,20 @@ function statutBadgeFr(statut) {
   return `<span class="${map[statut] || 'text-slate-400'} text-[11px] font-semibold">${statut}</span>`;
 }
 
+// Sources supportées par le lecteur proxy (CF Worker)
+const PROXY_SOURCES = new Set(["Sushiscan", "Raijin-Scans", "Crunchyscan"]);
+
 // ── Render card ──────────────────────────────────────
 function cardLink(oeuvre) {
-  // MangaDex avec lecteur intégré → on lit sur scanaddiction
+  // MangaDex → lecteur intégré via API officielle
   if (oeuvre.lecteurIntegre && oeuvre.mangadexId) {
     return `/lecteur-fr.html?id=${oeuvre.mangadexId}`;
   }
-  // Autres sources → site externe
+  // Sources Madara → lecteur intégré via proxy CF Worker
+  if (PROXY_SOURCES.has(oeuvre.sourceNom) && oeuvre.url) {
+    return `/lecteur-fr.html?src=${encodeURIComponent(oeuvre.url)}`;
+  }
+  // Autres → site externe
   return oeuvre.url;
 }
 
@@ -159,7 +166,7 @@ function renderCard(oeuvre) {
   // Badge lecteur intégré vs source externe
   const readerBadge = isLocal
     ? `<span class="text-[10px] bg-violet-900/70 text-violet-300 px-1.5 py-0.5 rounded font-bold border border-violet-700/40">▶ Lire ici</span>`
-    : `<span class="text-[10px] bg-black/60 text-slate-300 px-1.5 py-0.5 rounded font-medium">↗ ${oeuvre.sourceNom || ''}</span>`;
+    : `<span class="text-[10px] bg-black/60 text-slate-300 px-1.5 py-0.5 rounded font-medium">↗ ${oeuvre.sourceNom || 'Source'}</span>`;
 
   return `
 <a href="${href}" ${isLocal ? '' : 'rel="noopener noreferrer"'} target="${target}"
@@ -254,4 +261,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Tri
     list.sort((a, b) => {
       if (sortBy === 'note')     return (b.note || 0) - (a.note || 0);
-      if (sortBy === 'chapitres') return (b.dernierChapitre || 
+      if (sortBy === 'chapitres') return (b.dernierChapitre || 0) - (a.dernierChapitre || 0);
+      return a.titre.localeCompare(b.titre, 'fr');
+    });
+
+    countEl.textContent = `${list.length} résultat${list.length !== 1 ? 's' : ''}`;
+
+    if (!list.length) {
+      grid.classList.add('hidden');
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    grid.classList.remove('hidden');
+    grid.innerHTML = list.map(renderCard).join('');
+  }
+
+  // Events
+  ['search','filter-type','filter-statut','filter-source','sort'].forEach(id => {
+    document.getElementById(id).addEventListener('input', render);
+  });
+
+  render();
+});
+</script>
+</body>
+</html>
