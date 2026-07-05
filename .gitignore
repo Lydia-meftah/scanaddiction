@@ -4,3 +4,9 @@ Thumbs.db
 node_modules/ 
 .env 
 setup_git.bat 
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
