@@ -3,318 +3,137 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catalogue Francophone — Scanaddiction</title>
+  <title>Catalogue VF — ScanAddiction</title>
   <meta name="description" content="Catalogue agrégé de manhwa, webtoon et manga disponibles en français sur les sites scantrad francophones.">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="/js/tracking.js"></script>
+  <style>
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;background:oklch(0.165 0.012 270);font-family:'Hanken Grotesk',system-ui,sans-serif;}
+    ::selection{background:oklch(0.68 0.21 292);color:#15171d;}
+    .sa-scroll::-webkit-scrollbar{height:6px;width:6px;}
+    .sa-scroll::-webkit-scrollbar-thumb{background:oklch(0.34 0.014 270);border-radius:99px;}
+    .sa-scroll::-webkit-scrollbar-track{background:transparent;}
+    .sa-hidescroll::-webkit-scrollbar{display:none;}
+    .sa-hidescroll{scrollbar-width:none;}
+    @keyframes saPop{from{opacity:0;transform:translateY(-6px) scale(0.98);}to{opacity:1;transform:none;}}
+    @keyframes saUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+    @keyframes saFloat{0%,100%{transform:translateY(0) rotate(-8deg);}50%{transform:translateY(-14px) rotate(-3deg);}}
+    .sa-card{animation:saUp .4s cubic-bezier(.2,.7,.3,1) both;transition:border-color .2s,box-shadow .2s,transform .2s;}
+    .sa-card:hover .sa-cover{transform:scale(1.04);}
+    .sa-card:hover{border-color:oklch(0.6 0.2 292 / 0.7)!important;box-shadow:0 0 0 1px oklch(0.6 0.2 292 / 0.25),0 16px 40px -12px oklch(0.55 0.24 292 / 0.55);transform:translateY(-2px);}
+    .sa-search:focus{border-color:oklch(0.62 0.2 292 / 0.8)!important;box-shadow:0 0 0 4px oklch(0.55 0.22 292 / 0.18),0 12px 40px -12px oklch(0.1 0.02 270 / 0.7)!important;}
+    .sa-btn-primary{background:linear-gradient(135deg,oklch(0.68 0.21 292),oklch(0.58 0.22 258));box-shadow:0 8px 24px -8px oklch(0.55 0.24 285 / 0.6);}
+    .sa-btn-primary:hover{filter:brightness(1.08);}
+    @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+    .sa-skeleton{background:linear-gradient(90deg,oklch(0.22 0.013 270) 25%,oklch(0.26 0.013 270) 50%,oklch(0.22 0.013 270) 75%);background-size:200% 100%;animation:shimmer 1.6s infinite;}
+    .dropdown-menu{position:absolute;top:calc(100% + 8px);z-index:40;min-width:190px;background:oklch(0.22 0.013 270);border:1px solid oklch(0.34 0.014 270);border-radius:13px;padding:6px;box-shadow:0 20px 50px -16px oklch(0.05 0.02 270 / 0.9);animation:saPop .16s ease both;}
+    .drop-opt{display:flex;align-items:center;justify-content:space-between;width:100%;padding:9px 12px;border-radius:9px;border:none;background:transparent;color:oklch(0.82 0.012 270);font-family:'Hanken Grotesk';font-weight:500;font-size:13.5px;cursor:pointer;text-align:left;}
+    .drop-opt:hover{background:oklch(0.28 0.014 270);}
+  </style>
 </head>
-<body class="bg-[#080810] text-slate-100 min-h-screen">
+<body>
 
-<div id="nav-placeholder"></div>
+<div style="min-height:100vh;position:relative;background:radial-gradient(1200px 600px at 50% -200px,oklch(0.34 0.16 292 / 0.4),transparent 70%),radial-gradient(900px 500px at 100% 700px,oklch(0.32 0.15 264 / 0.22),transparent 70%),radial-gradient(800px 500px at -5% 900px,oklch(0.34 0.16 300 / 0.2),transparent 70%),oklch(0.15 0.018 270);color:oklch(0.97 0.004 270);overflow-x:hidden;">
 
-<!-- HERO -->
-<section class="border-b border-[#1e1e35] bg-[#0c0c18] pt-10 pb-8">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6">
-    <div class="flex flex-col sm:flex-row sm:items-end gap-4">
-      <div class="flex-1">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="px-2 py-0.5 bg-blue-900/40 border border-blue-800/50 text-blue-300 text-xs font-bold rounded-full">Agrégateur</span>
-          <span class="px-2 py-0.5 bg-emerald-900/30 border border-emerald-800/40 text-emerald-400 text-xs font-bold rounded-full">Francophone</span>
+  <!-- HEADER -->
+  <header style="position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:oklch(0.165 0.012 270 / 0.82);border-bottom:1px solid oklch(0.28 0.014 270);">
+    <div style="max-width:1280px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;gap:32px;">
+      <a href="/" style="display:flex;align-items:center;gap:11px;text-decoration:none;color:inherit;">
+        <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(150deg,oklch(0.68 0.21 292),oklch(0.56 0.22 264));display:flex;align-items:center;justify-content:center;font-size:19px;">🪼</div>
+        <div style="font-family:'Space Grotesk';font-weight:700;font-size:18px;letter-spacing:-0.01em;">Scan<span style="color:oklch(0.68 0.21 292);">Addiction</span></div>
+      </a>
+      <nav style="display:flex;gap:4px;margin-left:8px;">
+        <a href="/catalogue-fr.html" style="padding:8px 14px;border-radius:8px;color:oklch(0.97 0.004 270);text-decoration:none;font-weight:600;font-size:14px;background:linear-gradient(135deg,oklch(0.32 0.14 292 / 0.55),oklch(0.28 0.12 264 / 0.4));border:1px solid oklch(0.45 0.16 292 / 0.4);">Catalogue</a>
+        <a href="#" style="padding:8px 14px;border-radius:8px;color:oklch(0.66 0.012 270);text-decoration:none;font-weight:500;font-size:14px;">Populaire</a>
+        <a href="#" style="padding:8px 14px;border-radius:8px;color:oklch(0.66 0.012 270);text-decoration:none;font-weight:500;font-size:14px;">Nouveautés</a>
+      </nav>
+      <div style="margin-left:auto;">
+        <span id="meta-badge" style="font-size:12.5px;color:oklch(0.6 0.012 270);"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO + SEARCH -->
+  <section style="max-width:1280px;margin:0 auto;padding:54px 28px 30px;text-align:center;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-10px;left:6%;font-size:46px;opacity:.16;transform:rotate(-8deg);animation:saFloat 7s ease-in-out infinite;pointer-events:none;">🪼</div>
+    <div style="position:absolute;top:60px;right:8%;font-size:34px;opacity:.14;transform:rotate(10deg);animation:saFloat 8.5s ease-in-out infinite .8s;pointer-events:none;">🪼</div>
+    <div style="position:absolute;bottom:-6px;left:18%;font-size:26px;opacity:.12;animation:saFloat 6.5s ease-in-out infinite 1.6s;pointer-events:none;">🪼</div>
+
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:99px;background:oklch(0.3 0.13 292 / 0.5);border:1px solid oklch(0.42 0.15 285);font-size:12.5px;font-weight:600;color:oklch(0.82 0.11 292);margin-bottom:20px;">
+      <span style="width:7px;height:7px;border-radius:50%;background:oklch(0.68 0.21 292);box-shadow:0 0 10px oklch(0.68 0.21 292);"></span>
+      <span id="hero-count">…</span> scans · mis à jour chaque jour
+    </div>
+
+    <h1 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(34px,4.4vw,54px);line-height:1.04;letter-spacing:-0.025em;margin:0 0 14px;">Trouve ton prochain<br><span style="color:oklch(0.68 0.21 292);">scan</span> en quelques secondes.</h1>
+    <p style="color:oklch(0.66 0.012 270);font-size:16px;max-width:520px;margin:0 auto 30px;">Cherche par titre, filtre par genre, source, statut ou note. Tout est là, clair et rapide.</p>
+
+    <!-- SEARCH BAR -->
+    <div style="max-width:680px;margin:0 auto;position:relative;">
+      <div style="position:absolute;left:20px;top:50%;transform:translateY(-50%);color:oklch(0.6 0.012 270);pointer-events:none;font-size:20px;">⌕</div>
+      <input id="search-input" class="sa-search" placeholder="Rechercher un manga, manhwa, webtoon…"
+        style="width:100%;padding:18px 130px 18px 52px;border-radius:16px;border:1px solid oklch(0.34 0.03 280);background:oklch(0.2 0.02 275);color:oklch(0.97 0.004 270);font-family:'Hanken Grotesk';font-size:16.5px;outline:none;box-shadow:0 12px 40px -12px oklch(0.1 0.02 270 / 0.7);transition:border-color .2s,box-shadow .2s;" />
+      <button id="clear-search" style="display:none;position:absolute;right:104px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;border:none;background:oklch(0.3 0.014 270);color:oklch(0.8 0.012 270);cursor:pointer;font-size:14px;line-height:1;">✕</button>
+      <button class="sa-btn-primary" style="position:absolute;right:8px;top:8px;bottom:8px;padding:0 22px;border-radius:11px;border:none;color:#fff;font-family:'Hanken Grotesk';font-weight:700;font-size:15px;cursor:pointer;">Chercher</button>
+    </div>
+
+    <!-- GENRE CHIPS -->
+    <div id="genre-chips" class="sa-scroll sa-hidescroll" style="display:flex;gap:9px;justify-content:flex-start;overflow-x:auto;padding:22px 2px 4px;max-width:760px;margin:0 auto;"></div>
+  </section>
+
+  <!-- TOOLBAR -->
+  <section style="max-width:1280px;margin:0 auto;padding:8px 28px 0;">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid oklch(0.26 0.014 270);">
+      <span style="font-size:13px;font-weight:600;color:oklch(0.58 0.012 270);margin-right:2px;">Filtrer :</span>
+
+      <div data-dropdown="source" style="position:relative;">
+        <button id="btn-source" style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;border:1px solid oklch(0.32 0.014 270);background:oklch(0.21 0.012 270);color:oklch(0.92 0.004 270);font-family:'Hanken Grotesk';font-weight:600;font-size:13.5px;cursor:pointer;">
+          <span style="opacity:.6;font-weight:500;">Source</span><span id="lbl-source">Toutes</span><span style="opacity:.5;font-size:10px;">▾</span>
+        </button>
+        <div id="menu-source" class="dropdown-menu" style="display:none;"></div>
+      </div>
+
+      <div data-dropdown="statut" style="position:relative;">
+        <button id="btn-statut" style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;border:1px solid oklch(0.32 0.014 270);background:oklch(0.21 0.012 270);color:oklch(0.92 0.004 270);font-family:'Hanken Grotesk';font-weight:600;font-size:13.5px;cursor:pointer;">
+          <span style="opacity:.6;font-weight:500;">Statut</span><span id="lbl-statut">Tous</span><span style="opacity:.5;font-size:10px;">▾</span>
+        </button>
+        <div id="menu-statut" class="dropdown-menu" style="display:none;">
+          <button class="drop-opt" data-key="statut" data-val="Tous">Tous <span class="chk"></span></button>
+          <button class="drop-opt" data-key="statut" data-val="en cours">En cours <span class="chk"></span></button>
+          <button class="drop-opt" data-key="statut" data-val="terminé">Terminé <span class="chk"></span></button>
+          <button class="drop-opt" data-key="statut" data-val="pause">En pause <span class="chk"></span></button>
         </div>
-        <h1 class="text-3xl font-black text-white">Catalogue VF <span class="text-blue-400">·</span> Sites Francophones</h1>
-        <p class="text-slate-400 mt-1 text-sm">Toutes les œuvres disponibles en français. MangaDex → lecture intégrée sur ce site. Autres sources → lien externe.</p>
       </div>
-      <div class="text-right text-sm text-slate-500" id="meta-info">
-        Chargement…
+
+      <div data-dropdown="type" style="position:relative;">
+        <button id="btn-type" style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;border:1px solid oklch(0.32 0.014 270);background:oklch(0.21 0.012 270);color:oklch(0.92 0.004 270);font-family:'Hanken Grotesk';font-weight:600;font-size:13.5px;cursor:pointer;">
+          <span style="opacity:.6;font-weight:500;">Type</span><span id="lbl-type">Tous</span><span style="opacity:.5;font-size:10px;">▾</span>
+        </button>
+        <div id="menu-type" class="dropdown-menu" style="display:none;">
+          <button class="drop-opt" data-key="type" data-val="Tous">Tous <span class="chk"></span></button>
+          <button class="drop-opt" data-key="type" data-val="manga">Manga <span class="chk"></span></button>
+          <button class="drop-opt" data-key="type" data-val="manhwa">Manhwa <span class="chk"></span></button>
+          <button class="drop-opt" data-key="type" data-val="manhua">Manhua <span class="chk"></span></button>
+          <button class="drop-opt" data-key="type" data-val="webtoon">Webtoon <span class="chk"></span></button>
+        </div>
       </div>
-    </div>
-  </div>
-</section>
 
-<!-- FILTRES -->
-<div class="sticky top-0 z-30 bg-[#0a0a14]/95 backdrop-blur border-b border-[#1e1e35]">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap gap-2 items-center">
-    <!-- Search -->
-    <input id="search" type="search" placeholder="Rechercher…"
-      class="flex-1 min-w-[160px] bg-[#111120] border border-[#2a2a45] text-slate-100 placeholder-slate-500 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-600">
+      <div data-dropdown="note" style="position:relative;">
+        <button id="btn-note" style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;border:1px solid oklch(0.32 0.014 270);background:oklch(0.21 0.012 270);color:oklch(0.92 0.004 270);font-family:'Hanken Grotesk';font-weight:600;font-size:13.5px;cursor:pointer;">
+          <span style="opacity:.6;font-weight:500;">Note</span><span id="lbl-note">Toutes</span><span style="opacity:.5;font-size:10px;">▾</span>
+        </button>
+        <div id="menu-note" class="dropdown-menu" style="display:none;">
+          <button class="drop-opt" data-key="note" data-val="0">Toutes <span class="chk"></span></button>
+          <button class="drop-opt" data-key="note" data-val="4">4.0+ <span class="chk"></span></button>
+          <button class="drop-opt" data-key="note" data-val="4.5">4.5+ <span class="chk"></span></button>
+          <button class="drop-opt" data-key="note" data-val="4.8">4.8+ <span class="chk"></span></button>
+        </div>
+      </div>
 
-    <!-- Type -->
-    <select id="filter-type" class="bg-[#111120] border border-[#2a2a45] text-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
-      <option value="">Tous les types</option>
-      <option value="manhwa">Manhwa</option>
-      <option value="manga">Manga</option>
-      <option value="manhua">Manhua</option>
-      <option value="webtoon">Webtoon</option>
-    </select>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:13.5px;color:oklch(0.62 0.012 270);"><b id="result-count" style="color:oklch(0.95 0.004 270);font-weight:700;">…</b> résultats</span>
 
-    <!-- Statut -->
-    <select id="filter-statut" class="bg-[#111120] border border-[#2a2a45] text-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
-      <option value="">Tous statuts</option>
-      <option value="en cours">En cours</option>
-      <option value="terminé">Terminé</option>
-      <option value="pause">Pause</option>
-    </select>
-
-    <!-- Source -->
-    <select id="filter-source" class="bg-[#111120] border border-[#2a2a45] text-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
-      <option value="">Toutes les sources</option>
-    </select>
-
-    <!-- Sort -->
-    <select id="sort" class="bg-[#111120] border border-[#2a2a45] text-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
-      <option value="titre">A → Z</option>
-      <option value="note">Note</option>
-      <option value="chapitres">Chapitres</option>
-    </select>
-
-    <span id="count" class="text-xs text-slate-500 ml-auto"></span>
-  </div>
-</div>
-
-<!-- GRILLE -->
-<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-  <!-- Skeleton -->
-  <div id="skeleton-grid" class="catalogue-grid">
-    <script>
-      for(let i=0;i<24;i++) document.write('<div class="skeleton h-72 rounded-2xl"></div>');
-    </script>
-  </div>
-  <!-- Grille réelle -->
-  <div id="catalogue-grid" class="catalogue-grid hidden"></div>
-  <!-- Vide -->
-  <div id="empty-state" class="hidden text-center py-24 text-slate-500">
-    <div class="text-5xl mb-4">🔍</div>
-    <p class="text-lg font-semibold">Aucun résultat</p>
-    <p class="text-sm mt-1">Essayez de modifier vos filtres</p>
-  </div>
-  <!-- Erreur -->
-  <div id="error-state" class="hidden text-center py-24 text-slate-500">
-    <div class="text-5xl mb-4">⚠️</div>
-    <p class="text-lg font-semibold">Catalogue non disponible</p>
-    <p class="text-sm mt-1">Le catalogue sera généré lors du premier scraping automatique (chaque nuit à 3h UTC).</p>
-    <p class="text-sm mt-3 text-slate-600">
-      En attendant, visitez directement
-      <a href="https://raijin-scans.fr" target="_blank" rel="noopener" class="text-blue-400 hover:underline">raijin-scans.fr</a>
-    </p>
-  </div>
-</main>
-
-<div id="footer-placeholder"></div>
-
-<script src="/js/app.js"></script>
-<script>
-// ── Type badges ──────────────────────────────────────
-function typeBadgeFr(type) {
-  const map = {
-    manhwa : 'bg-blue-900/40 text-blue-400 border-blue-800/50',
-    manhua : 'bg-orange-900/40 text-orange-400 border-orange-800/50',
-    manga  : 'bg-purple-900/40 text-purple-400 border-purple-800/50',
-    webtoon: 'bg-teal-900/40 text-teal-400 border-teal-800/50',
-  };
-  const cls = map[type] || 'bg-slate-800 text-slate-400 border-slate-700/50';
-  return `<span class="px-1.5 py-0.5 rounded text-[11px] font-bold border ${cls}">${type}</span>`;
-}
-
-function statutBadgeFr(statut) {
-  const map = {
-    'en cours': 'text-emerald-400',
-    'terminé' : 'text-slate-400',
-    'pause'   : 'text-amber-400',
-  };
-  return `<span class="${map[statut] || 'text-slate-400'} text-[11px] font-semibold">${statut}</span>`;
-}
-
-// Sources supportées par le lecteur proxy (CF Worker)
-const PROXY_SOURCES = new Set(["Sushiscan", "Raijin-Scans", "Crunchyscan"]);
-
-// ── Render card ──────────────────────────────────────
-function cardLink(oeuvre) {
-  // MangaDex → lecteur intégré via API officielle
-  if (oeuvre.lecteurIntegre && oeuvre.mangadexId) {
-    return `/lecteur-fr.html?id=${oeuvre.mangadexId}`;
-  }
-  // Sources Madara → lecteur intégré via proxy CF Worker
-  if (PROXY_SOURCES.has(oeuvre.sourceNom) && oeuvre.url) {
-    return `/lecteur-fr.html?src=${encodeURIComponent(oeuvre.url)}`;
-  }
-  // Autres → site externe
-  return oeuvre.url;
-}
-
-function renderCard(oeuvre) {
-  const href    = cardLink(oeuvre);
-  const isLocal = href.startsWith('/');
-  const target  = isLocal ? '_self' : '_blank';
-
-  const cover = oeuvre.cover
-    ? `<img src="${oeuvre.cover}" alt="${oeuvre.titre}" loading="lazy"
-          class="absolute inset-0 w-full h-full object-cover"
-          onerror="this.style.display='none'">`
-    : '';
-
-  const genres = (oeuvre.genres || []).slice(0, 3)
-    .map(g => `<span class="badge-genre">${g}</span>`).join('');
-
-  const noteStar = oeuvre.note
-    ? `<span class="text-amber-400 text-xs">★ ${oeuvre.note.toFixed(1)}</span>`
-    : '';
-
-  const dernier = oeuvre.dernierChapitre
-    ? `<span class="text-slate-500 text-xs">Ch. ${oeuvre.dernierChapitre}</span>`
-    : '';
-
-  // Badge lecteur intégré vs source externe
-  const readerBadge = isLocal
-    ? `<span class="text-[10px] bg-violet-900/70 text-violet-300 px-1.5 py-0.5 rounded font-bold border border-violet-700/40">▶ Lire ici</span>`
-    : `<span class="text-[10px] bg-black/60 text-slate-300 px-1.5 py-0.5 rounded font-medium">↗ ${oeuvre.sourceNom || 'Source'}</span>`;
-
-  // Déterminer le reader_type pour le tracking
-  const readerType = (oeuvre.lecteurIntegre && oeuvre.mangadexId) ? 'mangadex'
-                   : PROXY_SOURCES.has(oeuvre.sourceNom) ? 'proxy'
-                   : 'external';
-  const trackClick = `SA_TRACK?.mangaClick(${JSON.stringify({
-    titre: oeuvre.titre, sourceNom: oeuvre.sourceNom,
-    type: oeuvre.type, statut: oeuvre.statut, id: oeuvre.id
-  })}, '${readerType}')`;
-
-  return `
-<a href="${href}" ${isLocal ? '' : 'rel="noopener noreferrer"'} target="${target}"
-   onclick="${trackClick}"
-   class="card-oeuvre group block bg-[#111120] border border-[#1e1e35] rounded-2xl overflow-hidden
-          hover:border-blue-600/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-200">
-  <!-- Cover -->
-  <div class="relative h-48 bg-[#0c0c18] overflow-hidden">
-    ${cover}
-    <div class="absolute inset-0 bg-gradient-to-t from-[#111120] via-transparent to-transparent opacity-60"></div>
-    <div class="absolute top-2 left-2 flex gap-1">
-      ${typeBadgeFr(oeuvre.type || 'manhwa')}
-    </div>
-    <div class="absolute top-2 right-2">
-      ${statutBadgeFr(oeuvre.statut || 'en cours')}
-    </div>
-    <div class="absolute bottom-2 right-2">
-      ${readerBadge}
-    </div>
-  </div>
-  <!-- Infos -->
-  <div class="p-3">
-    <h3 class="font-bold text-sm text-slate-100 leading-tight line-clamp-2 mb-1
-               group-hover:text-blue-300 transition-colors">
-      ${oeuvre.titre}
-    </h3>
-    <div class="flex items-center gap-2 mb-2">
-      ${noteStar}
-      ${dernier}
-    </div>
-    <div class="flex flex-wrap gap-1">
-      ${genres}
-    </div>
-  </div>
-</a>`;
-}
-
-// ── Main ─────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-  const grid    = document.getElementById('catalogue-grid');
-  const skeleton= document.getElementById('skeleton-grid');
-  const empty   = document.getElementById('empty-state');
-  const errDiv  = document.getElementById('error-state');
-  const metaEl  = document.getElementById('meta-info');
-  const countEl = document.getElementById('count');
-
-  let allOeuvres = [];
-
-  // Fetch catalogue
-  try {
-    const r = await fetch('/data/catalogue-fr.json');
-    if (!r.ok) throw new Error('404');
-    const data = await r.json();
-    allOeuvres = data.oeuvres || [];
-
-    // Meta
-    const d = new Date(data.lastUpdate);
-    metaEl.textContent = `${data.total} œuvres · Mis à jour ${d.toLocaleDateString('fr-FR', {day:'numeric',month:'short',year:'numeric'})}`;
-
-    // Remplir le filtre source
-    const sourceSelect = document.getElementById('filter-source');
-    (data.sources || []).forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s;
-      opt.textContent = s;
-      sourceSelect.appendChild(opt);
-    });
-  } catch(e) {
-    skeleton.classList.add('hidden');
-    errDiv.classList.remove('hidden');
-    return;
-  }
-
-  skeleton.classList.add('hidden');
-
-  // ── Filtres & rendu ──────────────────────────────────
-  function render() {
-    const q      = document.getElementById('search').value.toLowerCase();
-    const type   = document.getElementById('filter-type').value;
-    const statut = document.getElementById('filter-statut').value;
-    const source = document.getElementById('filter-source').value;
-    const sortBy = document.getElementById('sort').value;
-
-    let list = allOeuvres.filter(o => {
-      if (q && !o.titre.toLowerCase().includes(q) &&
-          !(o.synopsis || '').toLowerCase().includes(q)) return false;
-      if (type   && o.type   !== type)   return false;
-      if (statut && o.statut !== statut) return false;
-      if (source && o.sourceNom !== source) return false;
-      return true;
-    });
-
-    // Tri
-    list.sort((a, b) => {
-      if (sortBy === 'note')     return (b.note || 0) - (a.note || 0);
-      if (sortBy === 'chapitres') return (b.dernierChapitre || 0) - (a.dernierChapitre || 0);
-      return a.titre.localeCompare(b.titre, 'fr');
-    });
-
-    countEl.textContent = `${list.length} résultat${list.length !== 1 ? 's' : ''}`;
-
-    if (!list.length) {
-      grid.classList.add('hidden');
-      empty.classList.remove('hidden');
-      return;
-    }
-    empty.classList.add('hidden');
-    grid.classList.remove('hidden');
-    grid.innerHTML = list.map(renderCard).join('');
-  }
-
-  // Events filtres + tracking
-  document.getElementById('search').addEventListener('input', () => {
-    render();
-    const term = document.getElementById('search').value;
-    const count = parseInt(countEl.textContent) || 0;
-    if (term.length >= 2) SA_TRACK?.search(term, count);
-  });
-
-  document.getElementById('filter-type').addEventListener('input', () => {
-    render();
-    SA_TRACK?.filterApply('type', document.getElementById('filter-type').value);
-  });
-  document.getElementById('filter-statut').addEventListener('input', () => {
-    render();
-    SA_TRACK?.filterApply('statut', document.getElementById('filter-statut').value);
-  });
-  document.getElementById('filter-source').addEventListener('input', () => {
-    render();
-    SA_TRACK?.filterApply('source', document.getElementById('filter-source').value);
-  });
-  document.getElementById('sort').addEventListener('input', () => {
-    render();
-    SA_TRACK?.sortApply(document.getElementById('sort').value);
-  });
-
-  render();
-});
-</script>
-</body>
-</html>
+        <div data-dropdown="sort" style="position:relative;">
+          <button id="btn-sort" style="display:flex;align-items:center;ga
