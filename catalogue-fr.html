@@ -136,4 +136,325 @@
         <span style="font-size:13.5px;color:oklch(0.62 0.012 270);"><b id="result-count" style="color:oklch(0.95 0.004 270);font-weight:700;">…</b> résultats</span>
 
         <div data-dropdown="sort" style="position:relative;">
-          <button id="btn-sort" style="display:flex;align-items:center;ga
+          <button id="btn-sort" style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;border:1px solid oklch(0.32 0.014 270);background:oklch(0.21 0.012 270);color:oklch(0.95 0.004 270);font-family:'Hanken Grotesk';font-weight:600;font-size:13.5px;cursor:pointer;">
+            <span style="opacity:.6;font-weight:500;">Trier :</span><span id="lbl-sort">Plus récent</span><span style="opacity:.5;font-size:10px;">▾</span>
+          </button>
+          <div id="menu-sort" class="dropdown-menu" style="display:none;right:0;left:auto;min-width:200px;">
+            <button class="drop-opt" data-key="sort" data-val="recent">Plus récent <span class="chk"></span></button>
+            <button class="drop-opt" data-key="sort" data-val="rating">Mieux notés <span class="chk"></span></button>
+            <button class="drop-opt" data-key="sort" data-val="chapters">Plus de chapitres <span class="chk"></span></button>
+            <button class="drop-opt" data-key="sort" data-val="alpha">A → Z <span class="chk"></span></button>
+          </div>
+        </div>
+
+        <div style="display:flex;border:1px solid oklch(0.32 0.014 270);border-radius:10px;overflow:hidden;">
+          <button id="btn-grid" style="padding:9px 12px;border:none;cursor:pointer;font-size:15px;line-height:1;">▦</button>
+          <button id="btn-list" style="padding:9px 12px;border:none;cursor:pointer;font-size:15px;line-height:1;">☰</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE PILLS -->
+    <div id="active-pills" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 0 2px;"></div>
+  </section>
+
+  <!-- RESULTS -->
+  <section style="max-width:1280px;margin:0 auto;padding:24px 28px 80px;">
+    <div id="skeleton" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:22px;">
+      <script>for(let i=0;i<12;i++)document.write('<div class="sa-skeleton" style="border-radius:15px;aspect-ratio:3/5.5;"></div>');</script>
+    </div>
+    <div id="grid-view" style="display:none;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:22px;"></div>
+    <div id="list-view" style="display:none;flex-direction:column;gap:10px;"></div>
+    <div id="empty-state" style="display:none;text-align:center;padding:70px 20px;border:1px dashed oklch(0.3 0.014 270);border-radius:18px;">
+      <div style="font-size:44px;margin-bottom:14px;opacity:.6;">🪼</div>
+      <div style="font-family:'Space Grotesk';font-weight:600;font-size:20px;margin-bottom:8px;">Aucun scan trouvé</div>
+      <div style="color:oklch(0.62 0.012 270);font-size:14.5px;margin-bottom:22px;">Essaie d'élargir ta recherche ou de retirer des filtres.</div>
+      <button id="clear-all-empty" class="sa-btn-primary" style="padding:11px 20px;border-radius:11px;border:none;color:#fff;font-family:'Hanken Grotesk';font-weight:700;font-size:14px;cursor:pointer;">Réinitialiser les filtres</button>
+    </div>
+    <div id="error-state" style="display:none;text-align:center;padding:70px 20px;">
+      <div style="font-size:44px;margin-bottom:14px;opacity:.6;">⚠️</div>
+      <div style="font-family:'Space Grotesk';font-weight:600;font-size:20px;margin-bottom:8px;">Catalogue non disponible</div>
+      <div style="color:oklch(0.62 0.012 270);font-size:14.5px;">Il sera généré lors du premier scraping automatique (chaque nuit à 3h UTC).</div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ── Config ──────────────────────────────────────────── */
+const PROXY_SOURCES = new Set(['Sushiscan','Raijin-Scans','Crunchyscan']);
+const TINTS = [
+  'oklch(0.46 0.1 28)','oklch(0.44 0.1 285)','oklch(0.45 0.09 205)',
+  'oklch(0.46 0.09 152)','oklch(0.45 0.1 330)','oklch(0.47 0.1 62)',
+  'oklch(0.44 0.09 245)','oklch(0.46 0.09 105)',
+];
+const SORT_LABELS = {recent:'Plus récent',rating:'Mieux notés',chapters:'Plus de chapitres',alpha:'A → Z'};
+const GENRE_LIST = ['Tous','Action','Romance','Fantasy','Isekai','Surnaturel','Drame','Sci-Fi','Horreur','Comédie','Sport','Slice of Life','Aventure','Mystère','Thriller','Harem','School Life'];
+
+/* ── State ───────────────────────────────────────────── */
+const S = {query:'',genre:'Tous',source:'Toutes',statut:'Tous',type:'Tous',minRating:0,sort:'recent',view:'grid',open:null};
+let allOeuvres = [];
+
+/* ── Helpers ─────────────────────────────────────────── */
+function cardLink(o) {
+  if (o.serie) return `/lecteur-fr.html?serie=${encodeURIComponent(o.serie)}`;
+  if (o.lecteurIntegre && o.mangadexId) return `/lecteur-fr.html?id=${o.mangadexId}`;
+  if (PROXY_SOURCES.has(o.sourceNom) && o.url) return `/lecteur-fr.html?src=${encodeURIComponent(o.url)}`;
+  return o.url || '#';
+}
+function statusStyle(st) {
+  const s = (st||'').toLowerCase();
+  if (s==='en cours') return {c:'oklch(0.82 0.15 152)',bg:'oklch(0.32 0.07 152 / 0.4)'};
+  if (s==='terminé')  return {c:'oklch(0.78 0.12 232)',bg:'oklch(0.32 0.06 232 / 0.4)'};
+  return {c:'oklch(0.84 0.13 78)',bg:'oklch(0.34 0.06 78 / 0.4)'};
+}
+function isHot(o){ return (o.note>=4.7 && (o.statut||'').toLowerCase()==='en cours') || o.dernierChapitre>150; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ── Filter ──────────────────────────────────────────── */
+function getFiltered() {
+  const q = S.query.trim().toLowerCase();
+  let list = allOeuvres.filter(o => {
+    if (q && ![o.titre,o.sourceNom,...(o.genres||[])].join(' ').toLowerCase().includes(q)) return false;
+    if (S.genre!=='Tous' && !(o.genres||[]).some(g=>g.toLowerCase().includes(S.genre.toLowerCase()))) return false;
+    if (S.source!=='Toutes' && o.sourceNom!==S.source) return false;
+    if (S.statut!=='Tous' && (o.statut||'').toLowerCase()!==S.statut) return false;
+    if (S.type!=='Tous' && (o.type||'').toLowerCase()!==S.type.toLowerCase()) return false;
+    if (S.minRating>0 && (o.note||0)<S.minRating) return false;
+    return true;
+  });
+  list.sort((a,b)=>{
+    if (S.sort==='rating')   return (b.note||0)-(a.note||0);
+    if (S.sort==='chapters') return (b.dernierChapitre||0)-(a.dernierChapitre||0);
+    if (S.sort==='alpha')    return (a.titre||'').localeCompare(b.titre||'','fr');
+    return (b.dernierChapitre||0)-(a.dernierChapitre||0);
+  });
+  return list;
+}
+
+/* ── Card templates ──────────────────────────────────── */
+function gridCard(o,i) {
+  const href=cardLink(o), tint=TINTS[i%TINTS.length], ss=statusStyle(o.statut);
+  const hot=isHot(o), type=(o.type||'manga').toUpperCase();
+  const rating=o.note?o.note.toFixed(1):'—', chap=o.dernierChapitre?`Ch. ${o.dernierChapitre}`:'';
+  const isLocal=href.startsWith('/');
+  const rt=o.serie?'scanaddiction':(o.lecteurIntegre&&o.mangadexId)?'mangadex':PROXY_SOURCES.has(o.sourceNom)?'proxy':'external';
+  const td=JSON.stringify({titre:o.titre,sourceNom:o.sourceNom,type:o.type,statut:o.statut,id:o.id});
+  return `<a href="${esc(href)}" ${isLocal?'':'rel="noopener noreferrer" target="_blank"'} class="sa-card"
+    onclick="window.SA_TRACK?.mangaClick(${esc(td)},'${rt}')"
+    style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:11px;border:1px solid oklch(0.27 0.014 270);border-radius:15px;padding:9px;background:oklch(0.195 0.012 270);">
+    <div style="position:relative;border-radius:10px;overflow:hidden;aspect-ratio:3/4.2;">
+      <div class="sa-cover" style="position:absolute;inset:0;background:linear-gradient(155deg,${tint},oklch(0.2 0.02 270));transition:transform .4s cubic-bezier(.2,.7,.3,1);"></div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(125deg,transparent 0 13px,oklch(1 0 0 / 0.04) 13px 14px);"></div>
+      ${o.cover?`<img src="${esc(o.cover)}" alt="${esc(o.titre)}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`:''}
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,oklch(0.12 0.02 270 / 0.92),transparent 55%);"></div>
+      <span style="position:absolute;top:9px;left:9px;padding:3px 9px;border-radius:7px;background:oklch(0.16 0.02 270 / 0.78);backdrop-filter:blur(4px);font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:oklch(0.86 0.04 45);">${type}</span>
+      ${hot?`<span style="position:absolute;top:9px;right:9px;padding:3px 8px;border-radius:7px;background:oklch(0.7 0.18 35);font-size:10.5px;font-weight:700;color:#16181e;">🔥 HOT</span>`:''}
+      <div style="position:absolute;left:11px;right:11px;bottom:10px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+          <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;background:${ss.bg};color:${ss.c};font-size:10.5px;font-weight:700;"><span style="width:5px;height:5px;border-radius:50%;background:${ss.c};"></span>${esc(o.statut||'en cours')}</span>
+          <span style="margin-left:auto;font-size:12px;font-weight:700;color:oklch(0.92 0.06 85);">★ ${rating}</span>
+        </div>
+        <div style="font-family:'Space Grotesk';font-weight:600;font-size:15px;line-height:1.15;letter-spacing:-0.01em;color:#fff;text-shadow:0 2px 8px oklch(0.1 0.02 270 / 0.8);">${esc(o.titre)}</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;padding:0 3px 4px;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:oklch(0.6 0.012 270);">
+        ${chap?`<span>${chap}</span><span style="opacity:.4;">·</span>`:''}
+        <span style="color:oklch(0.72 0.14 292);font-weight:600;">${esc(o.sourceNom||'')}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">
+        ${(o.genres||[]).slice(0,3).map(g=>`<span style="font-size:10.5px;padding:2px 6px;border-radius:5px;background:oklch(0.25 0.015 270);color:oklch(0.7 0.012 270);">${esc(g)}</span>`).join('')}
+      </div>
+    </div>
+  </a>`;
+}
+
+function listCard(o,i) {
+  const href=cardLink(o), tint=TINTS[i%TINTS.length], ss=statusStyle(o.statut);
+  const hot=isHot(o), type=(o.type||'manga').toUpperCase();
+  const rating=o.note?o.note.toFixed(1):'—', chap=o.dernierChapitre?`${o.dernierChapitre} chap.`:'';
+  const isLocal=href.startsWith('/');
+  const rt=o.serie?'scanaddiction':(o.lecteurIntegre&&o.mangadexId)?'mangadex':PROXY_SOURCES.has(o.sourceNom)?'proxy':'external';
+  const td=JSON.stringify({titre:o.titre,sourceNom:o.sourceNom,type:o.type,statut:o.statut,id:o.id});
+  return `<a href="${esc(href)}" ${isLocal?'':'rel="noopener noreferrer" target="_blank"'} class="sa-card"
+    onclick="window.SA_TRACK?.mangaClick(${esc(td)},'${rt}')"
+    style="text-decoration:none;color:inherit;display:flex;gap:16px;align-items:center;border:1px solid oklch(0.27 0.014 270);border-radius:14px;padding:11px;background:oklch(0.195 0.012 270);">
+    <div style="position:relative;width:62px;height:84px;border-radius:9px;overflow:hidden;flex:0 0 auto;">
+      <div style="position:absolute;inset:0;background:linear-gradient(155deg,${tint},oklch(0.2 0.02 270));"></div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(125deg,transparent 0 11px,oklch(1 0 0 / 0.04) 11px 12px);"></div>
+      ${o.cover?`<img src="${esc(o.cover)}" alt="${esc(o.titre)}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`:''}
+    </div>
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:5px;">
+        <span style="font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:oklch(0.75 0.11 292);">${type}</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;background:${ss.bg};color:${ss.c};font-size:10.5px;font-weight:700;"><span style="width:5px;height:5px;border-radius:50%;background:${ss.c};"></span>${esc(o.statut||'')}</span>
+        ${hot?'<span style="font-size:11px;">🔥</span>':''}
+      </div>
+      <div style="font-family:'Space Grotesk';font-weight:600;font-size:17px;letter-spacing:-0.01em;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(o.titre)}</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:oklch(0.6 0.012 270);flex-wrap:wrap;">
+        ${(o.genres||[]).slice(0,3).map(g=>esc(g)).join(' · ')}
+        ${chap?`<span style="opacity:.4;">·</span><span>${chap}</span>`:''}
+        <span style="opacity:.4;">·</span><span style="color:oklch(0.72 0.14 292);font-weight:600;">${esc(o.sourceNom||'')}</span>
+      </div>
+    </div>
+    <span style="font-size:15px;font-weight:700;color:oklch(0.92 0.06 85);flex-shrink:0;">★ ${rating}</span>
+  </a>`;
+}
+
+/* ── Render ───────────────────────────────────────────── */
+function render() {
+  const list = getFiltered();
+  const gridEl=document.getElementById('grid-view');
+  const listEl=document.getElementById('list-view');
+  const emptyEl=document.getElementById('empty-state');
+
+  document.getElementById('result-count').textContent = list.length;
+
+  if (!list.length) {
+    gridEl.style.display='none'; listEl.style.display='none'; emptyEl.style.display='block';
+  } else {
+    emptyEl.style.display='none';
+    if (S.view==='grid') {
+      listEl.style.display='none'; gridEl.style.display='grid';
+      gridEl.innerHTML = list.map((o,i)=>gridCard(o,i)).join('');
+    } else {
+      gridEl.style.display='none'; listEl.style.display='flex';
+      listEl.innerHTML = list.map((o,i)=>listCard(o,i)).join('');
+    }
+  }
+  renderPills(); syncStyles();
+}
+
+/* ── Active pills ────────────────────────────────────── */
+function renderPills() {
+  const pills=[];
+  if(S.genre!=='Tous')    pills.push({k:'genre',  v:S.genre,    reset:()=>set('genre','Tous')});
+  if(S.source!=='Toutes') pills.push({k:'source', v:S.source,   reset:()=>set('source','Toutes')});
+  if(S.statut!=='Tous')   pills.push({k:'statut', v:S.statut,   reset:()=>set('statut','Tous')});
+  if(S.type!=='Tous')     pills.push({k:'type',   v:S.type,     reset:()=>set('type','Tous')});
+  if(S.minRating>0)       pills.push({k:'note',   v:S.minRating+'+', reset:()=>set('minRating',0)});
+  const el=document.getElementById('active-pills');
+  if(!pills.length){el.style.display='none';return;}
+  el.style.display='flex';
+  el.innerHTML=pills.map((p,i)=>`<button data-pi="${i}" style="display:flex;align-items:center;gap:7px;padding:6px 8px 6px 13px;border-radius:99px;border:1px solid oklch(0.42 0.16 292);background:oklch(0.32 0.15 292 / 0.5);color:oklch(0.86 0.1 292);font-family:'Hanken Grotesk';font-weight:600;font-size:12.5px;cursor:pointer;"><span style="opacity:.65;font-weight:500;">${p.k}</span>${esc(p.v)}<span style="width:16px;height:16px;border-radius:50%;background:oklch(0.42 0.16 292 / 0.6);display:inline-flex;align-items:center;justify-content:center;font-size:10px;">✕</span></button>`).join('')
+    +`<button id="pill-clear" style="padding:6px 12px;border-radius:99px;border:none;background:transparent;color:oklch(0.62 0.012 270);font-family:'Hanken Grotesk';font-weight:600;font-size:12.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;">Tout effacer</button>`;
+  pills.forEach((p,i)=>el.querySelector(`[data-pi="${i}"]`).addEventListener('click',e=>{e.stopPropagation();p.reset();}));
+  el.querySelector('#pill-clear').addEventListener('click',clearAll);
+}
+
+/* ── Genre chips ─────────────────────────────────────── */
+function renderChips() {
+  const exist=new Set(allOeuvres.flatMap(o=>o.genres||[]));
+  const chips=GENRE_LIST.filter(g=>g==='Tous'||exist.has(g));
+  const el=document.getElementById('genre-chips');
+  el.innerHTML=chips.map(g=>{
+    const on=S.genre===g;
+    return `<button data-g="${esc(g)}" style="flex:0 0 auto;padding:8px 15px;border-radius:99px;border:1px solid ${on?'oklch(0.68 0.21 292)':'oklch(0.3 0.014 270)'};background:${on?'linear-gradient(135deg,oklch(0.68 0.21 292),oklch(0.58 0.22 258))':'oklch(0.22 0.013 270)'};color:${on?'#fff':'oklch(0.74 0.012 270)'};font-family:'Hanken Grotesk';font-weight:600;font-size:13.5px;cursor:pointer;white-space:nowrap;transition:all .15s;">${esc(g)}</button>`;
+  }).join('');
+  el.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();
+    const g=b.dataset.g;
+    set('genre',g);
+    window.SA_TRACK?.filterApply('genre',g);
+  }));
+}
+
+/* ── Source menu ─────────────────────────────────────── */
+function buildSourceMenu() {
+  const sources=['Toutes',...Array.from(new Set(allOeuvres.map(o=>o.sourceNom).filter(Boolean))).sort()];
+  const el=document.getElementById('menu-source');
+  el.innerHTML=sources.map(s=>`<button class="drop-opt" data-key="source" data-val="${esc(s)}">${esc(s)} <span class="chk"></span></button>`).join('');
+  el.querySelectorAll('.drop-opt').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation(); set('source',b.dataset.val); window.SA_TRACK?.filterApply('source',b.dataset.val);
+  }));
+}
+
+/* ── Dropdown sync ───────────────────────────────────── */
+function syncStyles() {
+  const setBtn=(id,lblId,label,active)=>{
+    const btn=document.getElementById(id); if(!btn)return;
+    btn.style.background=active?'oklch(0.3 0.14 292 / 0.5)':'oklch(0.21 0.012 270)';
+    btn.style.color=active?'oklch(0.85 0.1 292)':'oklch(0.92 0.004 270)';
+    btn.style.border=`1px solid ${active?'oklch(0.45 0.17 292)':'oklch(0.32 0.014 270)'}`;
+    if(lblId) document.getElementById(lblId).textContent=label;
+  };
+  setBtn('btn-source','lbl-source',S.source,S.source!=='Toutes');
+  setBtn('btn-statut','lbl-statut',S.statut==='Tous'?'Tous':S.statut,S.statut!=='Tous');
+  setBtn('btn-type','lbl-type',S.type==='Tous'?'Tous':S.type.charAt(0).toUpperCase()+S.type.slice(1),S.type!=='Tous');
+  setBtn('btn-note','lbl-note',S.minRating>0?S.minRating+'+':'Toutes',S.minRating>0);
+  setBtn('btn-sort','lbl-sort',SORT_LABELS[S.sort],false);
+  // view buttons
+  const gActive=S.view==='grid';
+  document.getElementById('btn-grid').style.cssText=`padding:9px 12px;border:none;cursor:pointer;font-size:15px;line-height:1;background:${gActive?'linear-gradient(135deg,oklch(0.68 0.21 292),oklch(0.58 0.22 258))':'oklch(0.21 0.012 270)'};color:${gActive?'#fff':'oklch(0.6 0.012 270)'};`;
+  document.getElementById('btn-list').style.cssText=`padding:9px 12px;border:none;cursor:pointer;font-size:15px;line-height:1;background:${!gActive?'linear-gradient(135deg,oklch(0.68 0.21 292),oklch(0.58 0.22 258))':'oklch(0.21 0.012 270)'};color:${!gActive?'#fff':'oklch(0.6 0.012 270)'};`;
+  // checkmarks in options
+  document.querySelectorAll('.drop-opt').forEach(b=>{
+    const k=b.dataset.key; const v=b.dataset.val;
+    const cur=k==='note'?String(S.minRating):k==='sort'?S.sort:S[k];
+    const on=v===cur;
+    b.style.background=on?'oklch(0.3 0.13 292 / 0.5)':'transparent';
+    b.style.color=on?'oklch(0.85 0.1 292)':'oklch(0.82 0.012 270)';
+    b.style.fontWeight=on?'700':'500';
+    const chk=b.querySelector('.chk'); if(chk) chk.textContent=on?'✓':'';
+    chk && (chk.style.color='oklch(0.68 0.21 292)');
+  });
+}
+
+/* ── Menus ───────────────────────────────────────────── */
+function closeAll(){ ['source','statut','type','note','sort'].forEach(k=>{const m=document.getElementById('menu-'+k);if(m)m.style.display='none';}); S.open=null; }
+function toggleMenu(k){ const was=S.open===k; closeAll(); if(!was){const m=document.getElementById('menu-'+k);if(m){m.style.display='block';S.open=k;}} }
+function set(k,v){ S[k]=v; S.open=null; closeAll(); if(k==='genre')renderChips(); render(); }
+function clearAll(){ Object.assign(S,{query:'',genre:'Tous',source:'Toutes',statut:'Tous',type:'Tous',minRating:0,open:null}); document.getElementById('search-input').value=''; document.getElementById('clear-search').style.display='none'; closeAll(); renderChips(); render(); }
+
+/* ── Event wiring ────────────────────────────────────── */
+function wire() {
+  // Search
+  let t; const si=document.getElementById('search-input'), cb=document.getElementById('clear-search');
+  si.addEventListener('input',()=>{ S.query=si.value; cb.style.display=S.query?'block':'none'; clearTimeout(t); t=setTimeout(()=>{ render(); if(S.query.length>=2) window.SA_TRACK?.search(S.query,getFiltered().length); },250); });
+  cb.addEventListener('click',e=>{e.stopPropagation();S.query='';si.value='';cb.style.display='none';render();});
+  // Dropdown toggles
+  ['source','statut','type','note','sort'].forEach(k=>{ const b=document.getElementById('btn-'+k); if(b) b.addEventListener('click',e=>{e.stopPropagation();toggleMenu(k);}); });
+  // Static options
+  document.querySelectorAll('.drop-opt').forEach(b=>{
+    if(b.closest('#menu-source')) return; // source menu is dynamic
+    b.addEventListener('click',e=>{ e.stopPropagation(); const k=b.dataset.key,v=k==='note'?parseFloat(b.dataset.val):b.dataset.val;
+      if(k==='sort'){S.sort=v;closeAll();window.SA_TRACK?.sortApply(v);render();}
+      else{set(k,v);window.SA_TRACK?.filterApply(k,String(v));}
+    });
+  });
+  // View
+  document.getElementById('btn-grid').addEventListener('click',e=>{e.stopPropagation();set('view','grid');});
+  document.getElementById('btn-list').addEventListener('click',e=>{e.stopPropagation();set('view','list');});
+  // Empty clear
+  document.getElementById('clear-all-empty').addEventListener('click',clearAll);
+  // Outside click
+  document.addEventListener('click',()=>closeAll());
+}
+
+/* ── Init ────────────────────────────────────────────── */
+async function init() {
+  try {
+    // Catalogue agrégé + séries traduites par Scanaddiction (/scans/index.json, hébergées sur R2)
+    const get=u=>fetch(u).then(r=>r.ok?r.json():null).catch(()=>null);
+    const [data,own]=await Promise.all([get('/data/catalogue-fr.json'),get('/scans/index.json')]);
+    if(!data && !own) throw new Error();
+    const ownList=(own&&own.oeuvres)||[];
+    const ownIds=new Set(ownList.map(o=>o.id));
+    allOeuvres=[...ownList,...((data&&data.oeuvres)||[]).filter(o=>!ownIds.has(o.id))];
+    document.getElementById('hero-count').textContent=allOeuvres.length;
+    const last=[data&&data.lastUpdate,own&&own.lastUpdate].filter(Boolean).sort().pop();
+    if(last){
+      const d=new Date(last);
+      document.getElementById('meta-badge').textContent=`${allOeuvres.length} œuvres · ${d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}`;
+    }
+    document.getElementById('skeleton').style.display='none';
+    buildSourceMenu(); renderChips(); wire(); render();
+  } catch(e) {
+    document.getElementById('skeleton').style.display='none';
+    document.getElementById('error-state').style.display='block';
+  }
+}
+init();
+</script>
+</body>
+</html>

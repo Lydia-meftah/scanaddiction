@@ -225,7 +225,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   mangaId   = p.get("id");
   seriesUrl = p.get("src");
 
-  if (mangaId) {
+  const serieSlug = p.get("serie");
+  if (serieSlug) {
+    mode = "sa";
+    await initSA(serieSlug, p.get("chapter"));
+  } else if (mangaId) {
     mode = "mangadex";
     await initMangaDex(mangaId, p.get("chapter"));
   } else if (seriesUrl) {
@@ -399,11 +403,60 @@ async function loadChapterProxy(chapUrl, idxHint) {
   }
 }
 
+// ────────────────────────────────────────────────
+// ══ MODE SCANADDICTION (chapitres traduits, hébergés sur R2) ══
+// ────────────────────────────────────────────────
+const SA = "/scans";
+let saSlug = null;
+
+async function initSA(slug, chapNum) {
+  saSlug = slug;
+  setState("loading", "Chargement…", "Récupération de la série…");
+  try {
+    const r = await fetch(`${SA}/${encodeURIComponent(slug)}/series.json`);
+    if (!r.ok) throw new Error(r.status === 404 ? "série inconnue" : `HTTP ${r.status}`);
+    const s = await r.json();
+    const titre = s.titre || slug;
+    setMangaHeader(titre, s.cover ? `${SA}/${slug}/${s.cover}` : "",
+      `${s.statut ? s.statut.charAt(0).toUpperCase() + s.statut.slice(1) : "En cours"} · Traduction Scanaddiction`);
+    setBadge("Scanaddiction");
+    window.SA_TRACK?.readerOpen(titre, "scanaddiction", "scanaddiction");
+    chapters = (s.chapitres || []).map(c => ({
+      id: String(c.num), num: parseFloat(c.num) || 0, title: c.titre || "", pages: c.pages || [],
+    }));
+    if (!chapters.length) throw new Error("aucun chapitre publié pour l'instant");
+    buildSelect(chapters.map((c, i) => ({
+      label: `Chapitre ${c.id}${c.title ? ` — ${c.title}` : ""}`, value: c.id, idx: i,
+    })));
+    let idx = chapters.length - 1;
+    if (chapNum) {
+      const f = chapters.findIndex(c => c.id === String(chapNum));
+      if (f >= 0) idx = f;
+    }
+    loadChapterSA(chapters[idx].id, idx);
+  } catch (e) {
+    showError("Série introuvable", `Impossible de charger cette série : ${e.message}`);
+  }
+}
+
+function loadChapterSA(id, idxHint) {
+  if (idxHint === undefined) idxHint = chapters.findIndex(c => c.id === id);
+  curIdx = idxHint;
+  const c = chapters[idxHint];
+  syncSelect(id);
+  syncUrl({ chapter: id });
+  const images = c.pages.map(p => `${SA}/${saSlug}/${encodeURIComponent(c.id)}/${p}`);
+  renderChapter(images);
+  window.SA_TRACK?.chapterLoaded(c.num, images.length);
+  updateNav();
+}
+
 function onChapterChange(val) {
   const idx = chapters.findIndex(c => (c.id ?? c.url) === val);
   if (idx < 0) return;
   window.SA_TRACK?.chapterNavigate("select", chapters[idx]?.num ?? idx);
   if (mode === "mangadex") loadChapterMDX(val, idx);
+  else if (mode === "sa") loadChapterSA(val, idx);
   else loadChapterProxy(val, idx);
 }
 
@@ -438,6 +491,7 @@ function navChapter(dir) {
   const c = chapters[next];
   window.SA_TRACK?.chapterNavigate(dir > 0 ? "next" : "prev", c.num ?? next);
   if (mode === "mangadex") loadChapterMDX(c.id, next);
+  else if (mode === "sa") loadChapterSA(c.id, next);
   else loadChapterProxy(c.url, next);
 }
 
