@@ -1,0 +1,16 @@
+# Cloudflare Pages + D1 — configuration
+# Récupère database_id avec : wrangler d1 create scanaddiction  (puis colle l'ID ci-dessous)
+name = "scanaddiction-pages"
+pages_build_output_dir = "."
+compatibility_date = "2026-10-11"
+
+[[d1_databases]]
+binding = "DB"                 # accessible via env.DB dans les Functions
+database_name = "scanaddiction"
+database_id = "b89ed803-b8c1-4321-9d4d-1f98263c1fa6"
+migrations_dir = "db/migrations"
+
+# Chapitres traduits par le Traducteur Scanaddiction (lecture seule côté site, via /scans/…)
+[[r2_buckets]]
+binding = "SCANS"
+bucket_name = "scanaddiction-scans"

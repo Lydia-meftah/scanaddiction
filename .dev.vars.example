@@ -1,0 +1,4 @@
+# Variables locales Cloudflare (wrangler) — copier en .dev.vars (gitignoré)
+# Ne JAMAIS committer de secret réel.
+GITHUB_TOKEN=
+MAKE_TOKEN=

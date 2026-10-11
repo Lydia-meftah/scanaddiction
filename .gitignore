@@ -4,3 +4,12 @@ Thumbs.db
 node_modules/ 
 .env 
 setup_git.bat 
+# Secrets & artefacts locaux
+.mcp.json
+.dev.vars
+build/
+data/raw/
+.wrangler/
+
+__pycache__/
+*.pyc

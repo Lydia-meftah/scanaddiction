@@ -1,0 +1,63 @@
+name: 🤖 ETL catalogue
+
+on:
+  schedule:
+    - cron: '0 3 * * *'      # chaque nuit 03:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: etl-catalogue
+  cancel-in-progress: false
+
+jobs:
+  etl:
+    name: Extract → validate → load
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: 📦 Dépendances
+        run: pip install -r etl/requirements.txt
+
+      - name: 🕷️ Pipeline ETL (JSON + build/upsert.sql)
+        run: python -m etl.run
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: ☁️ Charger dans D1 (si configuré)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        run: |
+          npm i -g wrangler
+          wrangler d1 migrations apply scanaddiction --remote
+          wrangler d1 execute scanaddiction --remote --file=build/upsert.sql
+
+      - name: 💾 Commit du catalogue JSON
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/catalogue-fr.json
+          if git diff --staged --quiet; then
+            echo "Aucun changement."
+          else
+            N=$(python -c "import json;print(json.load(open('data/catalogue-fr.json'))['total'])")
+            git commit -m "🤖 Catalogue — ${N} œuvres [$(date +'%Y-%m-%d')]"
+            git push
+          fi
+
+      - name: 🔔 Alerte Discord si échec
+        if: ${{ failure() && secrets.DISCORD_WEBHOOK != '' }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d '{"content":"⚠️ ETL Scanaddiction en échec — voir GitHub Actions."}' \
+            "${{ secrets.DISCORD_WEBHOOK }}"
