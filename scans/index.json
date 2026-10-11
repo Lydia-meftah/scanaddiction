@@ -1,0 +1,27 @@
+{
+ "lastUpdate": "2026-10-11T22:47:48Z",
+ "total": 1,
+ "sources": [
+  "Scanaddiction"
+ ],
+ "oeuvres": [
+  {
+   "id": "sa-test-traducteur",
+   "serie": "test-traducteur",
+   "titre": "Test Traducteur",
+   "url": "https://scanaddiction-pages.pages.dev/lecteur-fr.html?serie=test-traducteur",
+   "cover": "/scans/test-traducteur/cover.webp",
+   "type": "manhwa",
+   "statut": "en cours",
+   "synopsis": "",
+   "genres": [],
+   "auteur": "",
+   "note": 0,
+   "dernierChapitre": 1,
+   "sourceNom": "Scanaddiction",
+   "sourceUrl": "https://scanaddiction-pages.pages.dev",
+   "lecteurIntegre": true,
+   "majLe": "2026-10-11T22:47:48Z"
+  }
+ ]
+}
