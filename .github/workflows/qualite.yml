@@ -1,0 +1,39 @@
+name: ✅ Qualité
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 🎨 css/tailwind.css est à jour
+        run: |
+          npx --yes tailwindcss@3.4.17 -i css/tailwind.src.css -o css/tailwind.css --minify
+          git diff --exit-code -- css/tailwind.css || {
+            echo "::error::css/tailwind.css n'est pas à jour. Lancer : npx tailwindcss@3.4.17 -i css/tailwind.src.css -o css/tailwind.css --minify"
+            exit 1
+          }
+
+      - name: 🚫 Pas de CDN Tailwind ni de .mcp.json versionné
+        run: |
+          if grep -l 'cdn.tailwindcss.com' *.html; then echo "::error::CDN Tailwind détecté"; exit 1; fi
+          if git ls-files --error-unmatch .mcp.json 2>/dev/null; then echo "::error::.mcp.json ne doit pas être versionné"; exit 1; fi
+
+      - name: 🔧 Syntaxe des Pages Functions et des scripts
+        run: for f in functions/api/*.js js/*.js; do node --check "$f"; done
+
+      - name: 📊 Catalogue valide
+        run: python3 check_catalogue.py

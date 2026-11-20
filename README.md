@@ -17,8 +17,9 @@ Plateforme communautaire de scantrad amateur francophone. Des manga et manhwa tr
 ## Stack technique
 
 - Site statique : HTML / CSS / JavaScript vanilla
+- Styles : Tailwind CSS 3 compilé (`css/tailwind.css`, voir plus bas)
 - Hébergement : Cloudflare Pages (+ Pages Functions pour l'API du lecteur)
-- Données : fichiers JSON dans `data/`, alimentés par `scraper.py` (AniList + MangaDex)
+- Données : fichiers JSON dans `data/`, régénérés chaque nuit par `scraper.py` (API MangaDex + sitemaps de sites partenaires) ; le catalogue actuellement en ligne provient d'AniList
 - CI : GitHub Actions (`.github/workflows`)
 - Analytics : Google Analytics 4 + Google Tag Manager
 
@@ -45,5 +46,20 @@ Plateforme communautaire de scantrad amateur francophone. Des manga et manhwa tr
 # Servir le site en local
 npx wrangler pages dev .
 ```
+
+### Styles Tailwind
+
+Tailwind n'est plus chargé depuis le CDN : il est compilé dans `css/tailwind.css`.
+Après avoir ajouté ou modifié des classes Tailwind dans les pages ou les scripts, régénérer le fichier :
+
+```bash
+npx tailwindcss@3.4.17 -i css/tailwind.src.css -o css/tailwind.css --minify
+```
+
+La CI vérifie que ce fichier est à jour.
+
+### Configuration MCP
+
+Copier `.mcp.json.example` en `.mcp.json` et y mettre ses jetons. `.mcp.json` est ignoré par git : ne jamais committer de jeton.
 
 Le déploiement est automatique : chaque push sur `main` déclenche un build Cloudflare Pages.
