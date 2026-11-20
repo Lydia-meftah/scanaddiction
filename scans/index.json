@@ -1,5 +1,5 @@
 {
- "lastUpdate": "2026-11-20T11:07:29Z",
+ "lastUpdate": "2026-11-20T11:07:47Z",
  "total": 1,
  "sources": [
   "Scanaddiction"
@@ -17,11 +17,11 @@
    "genres": [],
    "auteur": "",
    "note": 0,
-   "dernierChapitre": 0,
+   "dernierChapitre": 1,
    "sourceNom": "Scanaddiction",
    "sourceUrl": "https://scanaddiction-pages.pages.dev",
    "lecteurIntegre": true,
-   "majLe": "2026-11-20T11:07:29Z"
+   "majLe": "2026-11-20T11:07:47Z"
   }
  ]
 }
