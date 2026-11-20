@@ -32,6 +32,11 @@ jobs:
           if grep -l 'cdn.tailwindcss.com' *.html; then echo "::error::CDN Tailwind détecté"; exit 1; fi
           if git ls-files --error-unmatch .mcp.json 2>/dev/null; then echo "::error::.mcp.json ne doit pas être versionné"; exit 1; fi
 
+      - name: 🧹 Aucun fichier corrompu (octets nuls)
+        run: |
+          bad=$(git ls-files -z | xargs -0 grep -lP '\x00' --binary-files=text -- 2>/dev/null | grep -vE '\.(png|jpe?g|webp|gif|ico|woff2?)$' || true)
+          if [ -n "$bad" ]; then echo "::error::Octets nuls détectés (fichier corrompu) : $bad"; exit 1; fi
+
       - name: 🔧 Syntaxe des Pages Functions et des scripts
         run: for f in functions/api/*.js js/*.js; do node --check "$f"; done
 
