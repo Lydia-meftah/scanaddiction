@@ -42,6 +42,16 @@ jobs:
           gh label create "cto:approuvé"    --color 0E8A16 --description "Validée par le CTO IA" --force
           gh label create "cto:changements" --color D93F0B --description "Changements demandés par le CTO IA" --force
 
+      - name: Vérifier la clé Claude
+        env:
+          CLE_API: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLE_OAUTH: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -z "$CLE_API$CLE_OAUTH" ]; then
+            echo "::error::Aucune clé Claude : ajouter le secret CLAUDE_CODE_OAUTH_TOKEN (claude setup-token) ou ANTHROPIC_API_KEY dans Settings → Secrets and variables → Actions. Sans clé, l'agent ne fait rien."
+            exit 1
+          fi
+
       - name: Revue CTO
         uses: anthropics/claude-code-action@v1
         with:

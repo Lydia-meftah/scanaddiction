@@ -36,6 +36,16 @@ jobs:
 
       - run: pip install pyyaml
 
+      - name: Vérifier la clé Claude
+        env:
+          CLE_API: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLE_OAUTH: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -z "$CLE_API$CLE_OAUTH" ]; then
+            echo "::error::Aucune clé Claude : ajouter le secret CLAUDE_CODE_OAUTH_TOKEN (claude setup-token) ou ANTHROPIC_API_KEY dans Settings → Secrets and variables → Actions. Sans clé, l'agent ne fait rien."
+            exit 1
+          fi
+
       - name: Audit ${{ matrix.role }}
         uses: anthropics/claude-code-action@v1
         with:
@@ -94,6 +104,16 @@ jobs:
           case "$N" in ''|*[!0-9]*) N=3 ;; esac
           [ "$N" -gt 5 ] && N=5
           echo "n=$N" >> "$GITHUB_OUTPUT"
+
+      - name: Vérifier la clé Claude
+        env:
+          CLE_API: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLE_OAUTH: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -z "$CLE_API$CLE_OAUTH" ]; then
+            echo "::error::Aucune clé Claude : ajouter le secret CLAUDE_CODE_OAUTH_TOKEN (claude setup-token) ou ANTHROPIC_API_KEY dans Settings → Secrets and variables → Actions. Sans clé, l'agent ne fait rien."
+            exit 1
+          fi
 
       - name: CTO — priorisation et tickets
         uses: anthropics/claude-code-action@v1
