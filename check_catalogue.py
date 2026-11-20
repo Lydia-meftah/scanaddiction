@@ -2,10 +2,11 @@
 """
 check_catalogue.py - Verification non bloquante du catalogue genere.
 
-Affiche un resume du catalogue. Si moins de 5 oeuvres ont ete trouvees,
-emet un avertissement GitHub Actions (::warning::) mais ne fait PAS
-echouer le workflow : les sources peuvent etre temporairement
-inaccessibles (Cloudflare, DNS, etc.) sans que cela soit une erreur de CI.
+Affiche un resume du catalogue.
+- 0 oeuvre ou JSON invalide : ECHEC (::error::). Le workflow s'arrete avant
+  le commit, ce qui evite d'ecraser le catalogue en ligne par un fichier vide.
+- Moins de 5 oeuvres : simple avertissement (::warning::), les sources
+  peuvent etre temporairement inaccessibles.
 """
 
 import json
@@ -21,8 +22,8 @@ def main():
         with open(OUTPUT_FILE, encoding="utf-8") as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"::warning::Fichier introuvable: {OUTPUT_FILE} - le scraper n'a rien produit.")
-        return 0
+        print(f"::error::Fichier introuvable: {OUTPUT_FILE} - le scraper n'a rien produit.")
+        return 1
     except json.JSONDecodeError as e:
         print(f"::error::JSON invalide dans {OUTPUT_FILE}: {e}")
         return 1
@@ -34,6 +35,10 @@ def main():
     print(f"Catalogue: {total} oeuvres")
     print(f"Sources  : {sources}")
     print(f"Mise a jour: {maj}")
+
+    if total == 0:
+        print("::error::Catalogue vide : commit annule pour ne pas ecraser la version en ligne.")
+        return 1
 
     if total < SEUIL_MIN:
         print(

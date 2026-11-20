@@ -9,11 +9,28 @@
  * GET /api/chapter?url={series_page_url}&mode=chapters   → { chapters: [...] }
  */
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+// Le proxy ne sert que le site lui-même (même origine) : plus d'en-tête
+// Access-Control-Allow-Origin: * qui permettait à n'importe quel site
+// d'utiliser ce proxy (et le quota Cloudflare) à sa place.
+const HEADERS = {
   'Content-Type': 'application/json',
+  'X-Content-Type-Options': 'nosniff',
 };
+
+// Origines autorisées à appeler /api/chapter (prod, previews, dev local)
+function isAllowedOrigin(origin) {
+  if (!origin) return true; // navigation directe / même origine sans en-tête Origin
+  try {
+    const { protocol, hostname } = new URL(origin);
+    if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
+    return protocol === 'https:' &&
+      (hostname === 'scanaddiction.pages.dev' || hostname.endsWith('.scanaddiction.pages.dev'));
+  } catch {
+    return false;
+  }
+}
+
+const MODES = new Set(['chapter', 'chapters']);
 
 // Domaines autorisés (whitelist de sécurité)
 const ALLOWED = [
@@ -25,10 +42,10 @@ const ALLOWED = [
 ];
 
 function ok(data) {
-  return new Response(JSON.stringify(data), { headers: CORS });
+  return new Response(JSON.stringify(data), { headers: HEADERS });
 }
 function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), { status, headers: CORS });
+  return new Response(JSON.stringify({ error: msg }), { status, headers: HEADERS });
 }
 
 async function getHtml(url) {
@@ -128,19 +145,23 @@ function extractChapters(html, origin) {
 export async function onRequest(context) {
   const { request } = context;
 
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: CORS });
-  }
+  if (request.method !== 'GET') return err('Méthode non autorisée', 405);
+
+  // Bloque les appels venant d'autres sites (Origin, sinon Referer)
+  const caller = request.headers.get('Origin') ?? request.headers.get('Referer');
+  if (!isAllowedOrigin(caller)) return err('Origine non autorisée', 403);
 
   const reqUrl  = new URL(request.url);
   const target  = reqUrl.searchParams.get('url');
   const mode    = reqUrl.searchParams.get('mode') ?? 'chapter';
 
   if (!target) return err('Paramètre ?url= manquant');
+  if (!MODES.has(mode)) return err('Paramètre ?mode= invalide');
 
   let parsed;
   try { parsed = new URL(target); }
   catch { return err('URL invalide'); }
+  if (parsed.protocol !== 'https:') return err('Seules les URL https sont acceptées');
 
   const host = parsed.hostname.replace(/^www\./, '');
   if (!ALLOWED.some(h => host === h || host.endsWith('.' + h))) {
@@ -158,6 +179,7 @@ export async function onRequest(context) {
       return ok({ images, count: images.length, source: target });
     }
   } catch (e) {
-    return err(e.message, 502);
+    console.error('[api/chapter]', e.message);
+    return err('Source injoignable', 502);
   }
 }
