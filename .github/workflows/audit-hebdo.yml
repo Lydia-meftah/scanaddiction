@@ -1,0 +1,118 @@
+name: 🧭 Audit hebdo — équipe IA
+
+# Chaque lundi, 4 agents auditent le site EN PARALLÈLE (lecture seule).
+# Le CTO fusionne les rapports, vérifie, priorise et crée les tickets.
+# Les 3 tickets les plus prioritaires reçoivent le label agent:<rôle> → traités automatiquement (equipe-ia.yml).
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'   # lundi 06:17 UTC
+  workflow_dispatch:
+    inputs:
+      tickets_auto:
+        description: Nombre de tickets confiés automatiquement aux agents (0 = aucun)
+        default: '3'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [securite, seo-perf, qa, data-engineer]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: pip install pyyaml
+
+      - name: Audit ${{ matrix.role }}
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Tu es l'agent « ${{ matrix.role }} » de Scanaddiction. Lis `.claude/agents/${{ matrix.role }}.md`,
+            `CLAUDE.md` et `docs/equipe/DECISIONS.md`.
+            Fais un AUDIT en lecture seule de ton domaine : ne modifie aucun fichier du dépôt.
+            Écris ton rapport dans `audit-${{ matrix.role }}.md` : un tableau
+            `gravité | fichier:ligne | problème | correction proposée | effort (S/M/L)`, au plus 10 lignes,
+            uniquement des constats vérifiés dans le code (pas de supposition).
+          claude_args: >-
+            --max-turns 40
+            --allowedTools "Read,Glob,Grep,Write,Bash(bash scripts/qualite.sh),Bash(git log:*),Bash(git grep:*),Bash(node --check:*),Bash(python3:*)"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-${{ matrix.role }}
+          path: audit-${{ matrix.role }}.md
+          if-no-files-found: warn
+
+  cto:
+    needs: audit
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: audits
+          merge-multiple: true
+
+      - name: Créer les labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for r in dev-frontend dev-backend data-engineer securite seo-perf qa ml-ocr; do
+            gh label create "agent:$r" --color 5319E7 --description "Confié à l'agent $r" --force
+            gh label create "role:$r"  --color C5DEF5 --description "Périmètre $r (non déclenché)" --force
+          done
+          gh label create "backlog-ia" --color FBCA04 --description "Ticket issu de l'audit IA" --force
+
+      - name: Nombre de tickets automatiques
+        id: n
+        env:
+          N: ${{ inputs.tickets_auto || '3' }}
+        run: |
+          case "$N" in ''|*[!0-9]*) N=3 ;; esac
+          [ "$N" -gt 5 ] && N=5
+          echo "n=$N" >> "$GITHUB_OUTPUT"
+
+      - name: CTO — priorisation et tickets
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Tu es le CTO de Scanaddiction. Lis `.claude/agents/cto.md`, `CLAUDE.md`, `docs/equipe/EQUIPE.md`
+            et `docs/equipe/DECISIONS.md`. Les rapports d'audit sont dans `audits/`.
+            1. Fusionne les rapports et supprime les doublons. Vérifie dans le code chaque constat critique ou haut,
+               et écarte ceux qui ne tiennent pas.
+            2. Évite les doublons avec l'existant : `gh issue list --state open --label backlog-ia --limit 100`.
+            3. Crée au plus 8 tickets (`gh issue create`), un par problème, au format ticket de `cto.md`,
+               avec le label `backlog-ia` et le label du rôle responsable (voir le tableau de `EQUIPE.md`).
+               - Pour les ${{ steps.n.outputs.n }} tickets les plus prioritaires : label `agent:<rôle>`
+                 (l'agent s'en charge alors automatiquement).
+               - Pour les autres : label `role:<rôle>` (en attente de validation humaine).
+               Jamais `agent:ml-ocr` en automatique. Aucun ticket contraire à la règle 5.
+            4. Termine par un ticket de synthèse « Audit hebdo — <date> » qui liste tous les tickets et les constats écartés.
+          claude_args: >-
+            --max-turns 40
+            --allowedTools "Read,Glob,Grep,Bash(gh issue list:*),Bash(gh issue create:*),Bash(gh issue view:*),Bash(gh label list:*),Bash(git log:*),Bash(git grep:*)"
