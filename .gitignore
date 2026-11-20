@@ -5,3 +5,4 @@ node_modules/
 .env 
 setup_git.bat 
 .mcp.json
+__pycache__/

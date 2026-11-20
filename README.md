@@ -40,6 +40,23 @@ Plateforme communautaire de scantrad amateur francophone. Des manga et manhwa tr
 └── sitemap.xml
 ```
 
+## Équipe IA
+
+Le dépôt est entretenu par une équipe de 8 agents IA coordonnée par un agent CTO :
+voir [`docs/equipe/EQUIPE.md`](docs/equipe/EQUIPE.md) et le journal des décisions [`docs/equipe/DECISIONS.md`](docs/equipe/DECISIONS.md).
+
+- **Dans Claude Code** : `/equipe <objectif>`, `/revue-pr <n>`, `/arbitrage <question>`, `/audit`.
+- **Sur GitHub** : label `agent:<rôle>` sur un ticket, revue CTO automatique des PR, audit chaque lundi, `@claude` en commentaire.
+
+### Mise en route (une seule fois)
+
+1. **Clé d'accès à Claude** : dans *Settings → Secrets and variables → Actions*, créer le secret
+   `CLAUDE_CODE_OAUTH_TOKEN` (généré avec `claude setup-token`, utilise l'abonnement Claude)
+   ou `ANTHROPIC_API_KEY` (facturation à l'usage via la console Anthropic).
+2. **Application GitHub Claude** installée sur le dépôt (<https://github.com/apps/claude>) : c'est elle qui
+   permet aux PR des agents de déclencher la CI et la revue du CTO.
+3. **Protection de `main`** (recommandé) : *Settings → Branches* → exiger une PR et le contrôle « ✅ Qualité ».
+
 ## Développement local
 
 ```bash

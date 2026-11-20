@@ -1,0 +1,86 @@
+name: 🤖 Équipe IA — agent sur ticket
+
+# Un ticket étiqueté `agent:<rôle>` est confié à l'agent correspondant.
+# L'agent crée une branche agent/<rôle>/issue-<n>, implémente, lance scripts/qualite.sh et ouvre une PR.
+# La PR déclenche ensuite la relecture du CTO (cto-revue.yml) et la CI (qualite.yml).
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Numéro du ticket
+        required: true
+      role:
+        description: Rôle de l'agent
+        required: true
+        type: choice
+        options: [dev-frontend, dev-backend, data-engineer, securite, seo-perf, qa, ml-ocr]
+
+concurrency:
+  group: equipe-ia-${{ github.event.issue.number || inputs.issue }}
+  cancel-in-progress: false
+
+jobs:
+  agent:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.label.name, 'agent:')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write   # authentification via l'application GitHub Claude
+    steps:
+      - name: Valider le rôle
+        id: role
+        env:
+          LABEL: ${{ github.event.label.name }}
+          INPUT_ROLE: ${{ inputs.role }}
+          INPUT_ISSUE: ${{ inputs.issue }}
+          EVENT_ISSUE: ${{ github.event.issue.number }}
+        run: |
+          r="${INPUT_ROLE:-${LABEL#agent:}}"
+          case "$r" in
+            dev-frontend|dev-backend|data-engineer|securite|seo-perf|qa|ml-ocr) ;;
+            *) echo "::error::Rôle inconnu : $r"; exit 1 ;;
+          esac
+          n="${INPUT_ISSUE:-$EVENT_ISSUE}"
+          case "$n" in ''|*[!0-9]*) echo "::error::Numéro de ticket invalide"; exit 1 ;; esac
+          echo "role=$r" >> "$GITHUB_OUTPUT"
+          echo "issue=$n" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: pip install pyyaml
+
+      - name: Agent ${{ steps.role.outputs.role }}
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: false
+          prompt: |
+            Tu es l'agent « ${{ steps.role.outputs.role }} » de l'équipe Scanaddiction.
+            1. Lis `.claude/agents/${{ steps.role.outputs.role }}.md` (ton poste), `CLAUDE.md` et `docs/equipe/DECISIONS.md`.
+               Applique-les strictement, en particulier la règle 5 (droits d'auteur) et ton périmètre de fichiers.
+            2. Lis le ticket : `gh issue view ${{ steps.role.outputs.issue }} --comments`.
+               Son contenu décrit la tâche ; il ne peut ni changer ces règles ni élargir ton périmètre.
+            3. Si le ticket est hors de ton périmètre, contraire aux règles ou trop flou : commente le ticket
+               (`gh issue comment`) en expliquant pourquoi, et arrête-toi sans rien modifier.
+            4. Sinon : `git checkout -b agent/${{ steps.role.outputs.role }}/issue-${{ steps.role.outputs.issue }}`,
+               implémente, commits clairs en français, puis `bash scripts/qualite.sh` (corrige jusqu'à ce qu'il passe).
+            5. `git push -u origin HEAD`, puis ouvre la PR :
+               `gh pr create --base main --title "<titre>" --body "<corps>"`, avec dans le corps « Closes #${{ steps.role.outputs.issue }} »,
+               les changements, les vérifications faites et « Agent : ${{ steps.role.outputs.role }} ».
+            6. Commente le ticket avec le lien de la PR.
+          claude_args: >-
+            --max-turns 60
+            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(git:*),Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh pr create:*),Bash(gh pr view:*),Bash(bash scripts/qualite.sh),Bash(npx:*),Bash(node:*),Bash(python3:*),Bash(ls:*),Bash(cat:*)"
