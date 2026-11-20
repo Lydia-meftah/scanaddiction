@@ -17,14 +17,21 @@ const HEADERS = {
   'X-Content-Type-Options': 'nosniff',
 };
 
-// Origines autorisées à appeler /api/chapter (prod, previews, dev local)
-function isAllowedOrigin(origin) {
+// Projets Cloudflare Pages du site (prod + previews <hash>.<projet>.pages.dev)
+const PAGES_PROJECTS = ['scanaddiction.pages.dev', 'scanaddiction-pages.pages.dev'];
+
+// Origines autorisées à appeler /api/chapter :
+// - le domaine qui sert la Function elle-même (quel qu'il soit : pages.dev, domaine perso…)
+// - les projets Pages ci-dessus et leurs previews
+// - le développement local
+function isAllowedOrigin(origin, selfHost) {
   if (!origin) return true; // navigation directe / même origine sans en-tête Origin
   try {
     const { protocol, hostname } = new URL(origin);
+    if (hostname === selfHost) return true;
     if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
     return protocol === 'https:' &&
-      (hostname === 'scanaddiction.pages.dev' || hostname.endsWith('.scanaddiction.pages.dev'));
+      PAGES_PROJECTS.some(p => hostname === p || hostname.endsWith('.' + p));
   } catch {
     return false;
   }
@@ -148,10 +155,10 @@ export async function onRequest(context) {
   if (request.method !== 'GET') return err('Méthode non autorisée', 405);
 
   // Bloque les appels venant d'autres sites (Origin, sinon Referer)
-  const caller = request.headers.get('Origin') ?? request.headers.get('Referer');
-  if (!isAllowedOrigin(caller)) return err('Origine non autorisée', 403);
-
   const reqUrl  = new URL(request.url);
+  const caller = request.headers.get('Origin') ?? request.headers.get('Referer');
+  if (!isAllowedOrigin(caller, reqUrl.hostname)) return err('Origine non autorisée', 403);
+
   const target  = reqUrl.searchParams.get('url');
   const mode    = reqUrl.searchParams.get('mode') ?? 'chapter';
 
