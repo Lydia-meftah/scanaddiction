@@ -17,3 +17,5 @@
 /api/*
   Cache-Control: no-store
   X-Robots-Tag: noindex
+  # Les réponses JSON du proxy ne doivent pas être intégrables par un autre site
+  Cross-Origin-Resource-Policy: same-origin

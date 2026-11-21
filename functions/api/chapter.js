@@ -48,6 +48,18 @@ const ALLOWED = [
   'scan-manga.com',
 ];
 
+// Un hostname est autorisé s'il correspond à un domaine de la whitelist
+// (ou un de ses sous-domaines). Centralisé ici pour que la validation de
+// l'URL initiale ET de l'URL finale (après redirection) partagent la même règle.
+function hostAllowed(hostname) {
+  const host = hostname.replace(/^www\./, '');
+  return ALLOWED.some(h => host === h || host.endsWith('.' + h));
+}
+
+// Garde-fous réseau du proxy
+const FETCH_TIMEOUT_MS = 10000;        // coupe une source qui ne répond pas
+const MAX_BYTES = 3 * 1024 * 1024;     // 3 Mo max lus par page (anti-abus mémoire)
+
 function ok(data) {
   return new Response(JSON.stringify(data), { headers: HEADERS });
 }
@@ -56,19 +68,52 @@ function err(msg, status = 400) {
 }
 
 async function getHtml(url) {
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
-      'Referer': new URL(url).origin + '/',
-      'Cache-Control': 'no-cache',
-    },
-    redirect: 'follow',
-    cf: { cacheTtl: 300, cacheEverything: false },
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`);
-  return res.text();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
+        'Referer': new URL(url).origin + '/',
+        'Cache-Control': 'no-cache',
+      },
+      redirect: 'follow',
+      signal: controller.signal,
+      cf: { cacheTtl: 300, cacheEverything: false },
+    });
+
+    // Anti-SSRF : la whitelist ne valide que l'URL de départ. `fetch` suivant
+    // les redirections, un site autorisé (ou compromis) pouvait rediriger le
+    // proxy vers une cible arbitraire. On revérifie donc l'URL finale : elle
+    // doit rester en https ET sur un domaine autorisé.
+    let finalUrl;
+    try { finalUrl = new URL(res.url); } catch { throw new Error('URL finale invalide'); }
+    if (finalUrl.protocol !== 'https:' || !hostAllowed(finalUrl.hostname)) {
+      throw new Error(`Redirection non autorisee: ${finalUrl.hostname}`);
+    }
+
+    if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`);
+
+    // Lecture bornée en taille pour éviter qu'une page géante épuise la mémoire.
+    if (!res.body) return await res.text();
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let out = '';
+    let total = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > MAX_BYTES) { try { await reader.cancel(); } catch {} break; }
+      out += decoder.decode(value, { stream: true });
+    }
+    out += decoder.decode();
+    return out;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ── Extraction images depuis une page chapitre ────────────────────────────
@@ -170,9 +215,8 @@ export async function onRequest(context) {
   catch { return err('URL invalide'); }
   if (parsed.protocol !== 'https:') return err('Seules les URL https sont acceptées');
 
-  const host = parsed.hostname.replace(/^www\./, '');
-  if (!ALLOWED.some(h => host === h || host.endsWith('.' + h))) {
-    return err(`Domaine non autorisé: ${host}`, 403);
+  if (!hostAllowed(parsed.hostname)) {
+    return err(`Domaine non autorisé: ${parsed.hostname.replace(/^www\./, '')}`, 403);
   }
 
   try {
