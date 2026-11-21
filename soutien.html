@@ -47,13 +47,18 @@
 
   <!-- CTA Ko-fi -->
   <a href="https://ko-fi.com/scanaddiction" target="_blank" rel="noopener noreferrer"
-     class="flex items-center justify-center gap-3 w-full p-5 bg-[#FF5E5B] hover:bg-[#e54b48] text-white rounded-2xl font-bold text-lg transition-colors shadow-xl shadow-[#ff5e5b]/20 mb-4">
+     class="flex items-center justify-center gap-3 w-full p-5 bg-[#FF5E5B] hover:bg-[#e54b48] text-white rounded-2xl font-bold text-lg transition-colors shadow-xl shadow-[#ff5e5b]/20 mb-4 sa-social">
     <span class="text-2xl">☕</span>
     M'offrir un café sur Ko-fi
   </a>
 
-  <p class="text-center text-xs text-slate-500 mb-8">
+  <p class="text-center text-xs text-slate-500 mb-8 sa-social">
     Paiement sécurisé via Ko-fi · Pas d'abonnement · 100% optionnel
+  </p>
+
+  <!-- Affiché tant que le soutien Ko-fi n'est pas actif ; retiré par app.js quand CFG.socialActive = true -->
+  <p class="sa-social-soon text-center text-sm text-slate-400 bg-[#111120] border border-[#1e1e35] rounded-2xl p-5 mb-8">
+    💜 Le soutien financier arrivera bientôt. En attendant, le meilleur soutien, c'est de lire, partager et faire vivre la communauté !
   </p>
 
   <!-- Ce que ça change PAS -->
