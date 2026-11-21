@@ -13,10 +13,21 @@ on:
 
 jobs:
   claude:
+    # Double verrou : le commentaire doit contenir @claude ET son auteur doit
+    # avoir un lien de confiance avec le dépôt (propriétaire, membre ou
+    # collaborateur). Sans ce filtre, n'importe quel visiteur pouvait démarrer
+    # le job (qui dispose de contents:write et des secrets) et ne compter que
+    # sur le contrôle interne de l'action. Defense-in-depth.
     if: >-
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
+      (github.event_name == 'issue_comment' &&
+        contains(github.event.comment.body, '@claude') &&
+        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
+      (github.event_name == 'pull_request_review_comment' &&
+        contains(github.event.comment.body, '@claude') &&
+        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
+      (github.event_name == 'pull_request_review' &&
+        contains(github.event.review.body, '@claude') &&
+        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.review.author_association))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
