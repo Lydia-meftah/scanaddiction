@@ -1,8 +1,27 @@
 {
- "lastUpdate": "2026-10-11T22:47:48Z",
- "total": 0,
+ "lastUpdate": "2026-11-21T05:53:37Z",
+ "total": 1,
  "sources": [
   "Scanaddiction"
  ],
- "oeuvres": []
+ "oeuvres": [
+  {
+   "id": "sa-the-delusional-hunter-in-another-world",
+   "serie": "the-delusional-hunter-in-another-world",
+   "titre": "The Delusional Hunter in Another World",
+   "url": "https://scanaddiction-pages.pages.dev/lecteur-fr.html?serie=the-delusional-hunter-in-another-world",
+   "cover": "/scans/the-delusional-hunter-in-another-world/cover.webp",
+   "type": "manhwa",
+   "statut": "en cours",
+   "synopsis": "Read Chapter 0 of The Delusional Hunter in Another World online for free: 9 high-quality pages and new chapters every day.",
+   "genres": [],
+   "auteur": "",
+   "note": 0,
+   "dernierChapitre": 0,
+   "sourceNom": "Scanaddiction",
+   "sourceUrl": "https://scanaddiction-pages.pages.dev",
+   "lecteurIntegre": true,
+   "majLe": "2026-11-21T05:53:37Z"
+  }
+ ]
 }
