@@ -224,7 +224,7 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 /* ── Filter ──────────────────────────────────────────── */
 function getFiltered() {
   const q = S.query.trim().toLowerCase();
-  const base = allOeuvres.filter(o => S.mode==='mine' ? !!o.serie : !o.serie);
+  const base = S.query.trim() ? allOeuvres : allOeuvres.filter(o => S.mode==='mine' ? !!o.serie : !o.serie);
   let list = base.filter(o => {
     if (q && ![o.titre,o.sourceNom,...(o.genres||[])].join(' ').toLowerCase().includes(q)) return false;
     if (S.genre!=='Tous' && !(o.genres||[]).some(g=>g.toLowerCase().includes(S.genre.toLowerCase()))) return false;
@@ -475,6 +475,13 @@ function renderModeTabs(){
   const banner=document.getElementById('mode-banner');
   if(!banner) return;
   banner.style.display='block';
+  if(S.query.trim()){
+    banner.style.border='1px solid oklch(0.45 0.16 292 / 0.5)';
+    banner.style.background='oklch(0.3 0.13 292 / 0.2)';
+    banner.style.color='oklch(0.86 0.1 292)';
+    banner.innerHTML='🔎 <b>Recherche VF</b> — résultats dans tout le catalogue (tes traductions + découverte). Les titres non hébergés ouvrent leur source.';
+    return;
+  }
   if(S.mode==='discover'){
     banner.style.border='1px solid oklch(0.4 0.1 78 / 0.5)';
     banner.style.background='oklch(0.3 0.06 78 / 0.22)';
@@ -506,6 +513,8 @@ async function init() {
       document.getElementById('meta-badge').textContent=`${allOeuvres.length} œuvres · ${d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}`;
     }
     document.getElementById('skeleton').style.display='none';
+    const qp=new URLSearchParams(location.search).get('q');
+    if(qp){ S.query=qp; const si=document.getElementById('search-input'); if(si) si.value=qp; const cb=document.getElementById('clear-search'); if(cb) cb.style.display='block'; }
     buildSourceMenu(); renderChips(); wire(); render();
   } catch(e) {
     document.getElementById('skeleton').style.display='none';
