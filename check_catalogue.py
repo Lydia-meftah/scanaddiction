@@ -37,8 +37,11 @@ def main():
     print(f"Mise a jour: {maj}")
 
     if total == 0:
-        print("::error::Catalogue vide : commit annule pour ne pas ecraser la version en ligne.")
-        return 1
+        # Depuis le retrait de l'agregateur de sources tierces, un catalogue
+        # vide est un etat valide (le site n'affiche que les oeuvres legit
+        # auto-hebergees via scans/index.json). Simple info, pas un echec.
+        print("::notice::Catalogue agrege vide (0 oeuvre) - etat attendu.")
+        return 0
 
     if total < SEUIL_MIN:
         print(
