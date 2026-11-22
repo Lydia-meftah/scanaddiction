@@ -176,6 +176,7 @@
     </div>
     <div id="grid-view" style="display:none;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:22px;"></div>
     <div id="list-view" style="display:none;flex-direction:column;gap:10px;"></div>
+    <div id="load-more" style="text-align:center;padding:30px 0 0;display:none;"></div>
     <div id="empty-state" style="display:none;text-align:center;padding:70px 20px;border:1px dashed oklch(0.3 0.014 270);border-radius:18px;">
       <div style="font-size:44px;margin-bottom:14px;opacity:.6;">🪼</div>
       <div style="font-family:'Space Grotesk';font-weight:600;font-size:20px;margin-bottom:8px;">Aucun scan trouvé</div>
@@ -202,7 +203,7 @@ const SORT_LABELS = {recent:'Plus récent',rating:'Mieux notés',chapters:'Plus 
 const GENRE_LIST = ['Tous','Action','Romance','Fantasy','Isekai','Surnaturel','Drame','Sci-Fi','Horreur','Comédie','Sport','Slice of Life','Aventure','Mystère','Thriller','Harem','School Life'];
 
 /* ── State ───────────────────────────────────────────── */
-const S = {query:'',genre:'Tous',source:'Toutes',statut:'Tous',type:'Tous',minRating:0,sort:'recent',view:'grid',open:null,mode:'mine'};
+const S = {query:'',genre:'Tous',source:'Toutes',statut:'Tous',type:'Tous',minRating:0,sort:'recent',view:'grid',open:null,mode:'mine',page:1};
 let allOeuvres = [];
 
 /* ── Helpers ─────────────────────────────────────────── */
@@ -315,6 +316,8 @@ function listCard(o,i) {
 /* ── Render ───────────────────────────────────────────── */
 function render() {
   const list = getFiltered();
+  const PAGE=48;
+  const shown = list.slice(0, S.page*PAGE);
   const gridEl=document.getElementById('grid-view');
   const listEl=document.getElementById('list-view');
   const emptyEl=document.getElementById('empty-state');
@@ -323,15 +326,25 @@ function render() {
 
   if (!list.length) {
     gridEl.style.display='none'; listEl.style.display='none'; emptyEl.style.display='block';
+    const lmE=document.getElementById('load-more'); if(lmE) lmE.style.display='none';
   } else {
     emptyEl.style.display='none';
     if (S.view==='grid') {
       listEl.style.display='none'; gridEl.style.display='grid';
-      gridEl.innerHTML = list.map((o,i)=>gridCard(o,i)).join('');
+      gridEl.innerHTML = shown.map((o,i)=>gridCard(o,i)).join('');
     } else {
       gridEl.style.display='none'; listEl.style.display='flex';
-      listEl.innerHTML = list.map((o,i)=>listCard(o,i)).join('');
+      listEl.innerHTML = shown.map((o,i)=>listCard(o,i)).join('');
     }
+  }
+  const lm=document.getElementById('load-more');
+  if(lm){
+    const reste=list.length-shown.length;
+    if(reste>0){
+      lm.style.display='block';
+      lm.innerHTML=`<button id="btn-more" style="padding:12px 26px;border-radius:12px;border:1px solid oklch(0.45 0.16 292 / 0.6);background:oklch(0.3 0.14 292 / 0.4);color:oklch(0.88 0.08 292);font-family:'Hanken Grotesk';font-weight:700;font-size:14px;cursor:pointer;">Charger plus · ${reste} restant${reste>1?'s':''}</button>`;
+      document.getElementById('btn-more').addEventListener('click',()=>{ S.page++; render(); });
+    } else lm.style.display='none';
   }
   renderPills(); syncStyles(); renderModeTabs();
 }
@@ -414,14 +427,14 @@ function syncStyles() {
 /* ── Menus ───────────────────────────────────────────── */
 function closeAll(){ ['source','statut','type','note','sort'].forEach(k=>{const m=document.getElementById('menu-'+k);if(m)m.style.display='none';}); S.open=null; }
 function toggleMenu(k){ const was=S.open===k; closeAll(); if(!was){const m=document.getElementById('menu-'+k);if(m){m.style.display='block';S.open=k;}} }
-function set(k,v){ S[k]=v; S.open=null; closeAll(); if(k==='genre')renderChips(); render(); }
-function clearAll(){ Object.assign(S,{query:'',genre:'Tous',source:'Toutes',statut:'Tous',type:'Tous',minRating:0,open:null}); document.getElementById('search-input').value=''; document.getElementById('clear-search').style.display='none'; closeAll(); renderChips(); render(); }
+function set(k,v){ S[k]=v; S.page=1; S.open=null; closeAll(); if(k==='genre')renderChips(); render(); }
+function clearAll(){ Object.assign(S,{query:'',genre:'Tous',source:'Toutes',statut:'Tous',type:'Tous',minRating:0,open:null,page:1}); document.getElementById('search-input').value=''; document.getElementById('clear-search').style.display='none'; closeAll(); renderChips(); render(); }
 
 /* ── Event wiring ────────────────────────────────────── */
 function wire() {
   // Search
   let t; const si=document.getElementById('search-input'), cb=document.getElementById('clear-search');
-  si.addEventListener('input',()=>{ S.query=si.value; cb.style.display=S.query?'block':'none'; clearTimeout(t); t=setTimeout(()=>{ render(); if(S.query.length>=2) window.SA_TRACK?.search(S.query,getFiltered().length); },250); });
+  si.addEventListener('input',()=>{ S.query=si.value; cb.style.display=S.query?'block':'none'; clearTimeout(t); S.page=1; t=setTimeout(()=>{ render(); if(S.query.length>=2) window.SA_TRACK?.search(S.query,getFiltered().length); },250); });
   cb.addEventListener('click',e=>{e.stopPropagation();S.query='';si.value='';cb.style.display='none';render();});
   // Dropdown toggles
   ['source','statut','type','note','sort'].forEach(k=>{ const b=document.getElementById('btn-'+k); if(b) b.addEventListener('click',e=>{e.stopPropagation();toggleMenu(k);}); });
@@ -429,7 +442,7 @@ function wire() {
   document.querySelectorAll('.drop-opt').forEach(b=>{
     if(b.closest('#menu-source')) return; // source menu is dynamic
     b.addEventListener('click',e=>{ e.stopPropagation(); const k=b.dataset.key,v=k==='note'?parseFloat(b.dataset.val):b.dataset.val;
-      if(k==='sort'){S.sort=v;closeAll();window.SA_TRACK?.sortApply(v);render();}
+      if(k==='sort'){S.sort=v;S.page=1;closeAll();window.SA_TRACK?.sortApply(v);render();}
       else{set(k,v);window.SA_TRACK?.filterApply(k,String(v));}
     });
   });
@@ -446,7 +459,7 @@ function wire() {
 }
 
 /* ── Mode (Mes traductions / Découverte) ─────────────── */
-function setMode(m){ if(S.mode===m) return; S.mode=m; S.open=null; closeAll(); window.SA_TRACK?.filterApply('mode',m); render(); window.scrollTo({top:0,behavior:'smooth'}); }
+function setMode(m){ if(S.mode===m) return; S.mode=m; S.page=1; S.open=null; closeAll(); window.SA_TRACK?.filterApply('mode',m); render(); window.scrollTo({top:0,behavior:'smooth'}); }
 function renderModeTabs(){
   const nMine=allOeuvres.filter(o=>o.serie).length;
   const nDisc=allOeuvres.length-nMine;
