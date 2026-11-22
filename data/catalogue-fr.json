@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2026-11-21T10:39:33.368574+00:00",
+  "lastUpdate": "2026-11-22T10:43:13.321521+00:00",
   "total": 4972,
   "sources": [
     "MangaDex",
@@ -28845,24 +28845,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-16201-52476",
-      "titre": "How to Live As the Vampire Lord",
-      "url": "https://www.scan-manga.com/16201-52476/How-to-Live-As-the-Vampire-Lord.html",
-      "cover": "https://static.scan-manga.com/img/manga/How_to_Live_As_the_Vampire_Lord_1_4468.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-hozuki-le-stoique",
       "titre": "Hozuki Le Stoique",
       "url": "https://sushiscan.net/catalogue/hozuki-le-stoique/",
@@ -42767,9 +42749,9 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-14951-11742",
+      "id": "sm-14951-34006",
       "titre": "Legendary Hero Is an Academy Honors Student",
-      "url": "https://www.scan-manga.com/14951-11742/Legendary-Hero-Is-an-Academy-Honors-Student.html",
+      "url": "https://www.scan-manga.com/14951-34006/Legendary-Hero-Is-an-Academy-Honors-Student.html",
       "cover": "https://static.scan-manga.com/img/manga/Legendary_Hero_Is_an_Academy_Honors_Student_1_376.jpg",
       "type": "manhwa",
       "statut": "en cours",
@@ -51435,7 +51417,7 @@
       "mangadexId": "f5c25341-d6ff-4585-8548-3a48fc7654d9",
       "titre": "Momose Akira no Hatsukoi Hatanchuu.",
       "url": "https://mangadex.org/title/f5c25341-d6ff-4585-8548-3a48fc7654d9",
-      "cover": "https://uploads.mangadex.org/covers/f5c25341-d6ff-4585-8548-3a48fc7654d9/26bd1cd9-bb1b-42d8-aa92-f916122c606c.jpg.512.jpg",
+      "cover": "https://uploads.mangadex.org/covers/f5c25341-d6ff-4585-8548-3a48fc7654d9/d2d186f1-2c34-48b4-9993-0019e3e5a1fc.png.512.jpg",
       "type": "manga",
       "statut": "en cours",
       "synopsis": "Kugayama Hajime, un garçon vivant à la campagne, revient vers son ancien camarade de classe Momose Akira, qu'il avait l'habitude d'admirer.Alors qu'il s'apprête à la regarder de loin et à profiter de sa jeunesse aigre-douce, Akira fait une approche inattendue.Et il y a eu un « destin » qui a été plus que ce qu'il aurait pu imaginer.",
@@ -60332,6 +60314,24 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
+      "lecteurIntegre": false
+    },
+    {
+      "id": "sm-14713-14251",
+      "titre": "Reincarnated as a Genius Prodigy of a Prestigious Family",
+      "url": "https://www.scan-manga.com/14713-14251/Reincarnated-as-a-Genius-Prodigy-of-a-Prestigious-Family.html",
+      "cover": "https://static.scan-manga.com/img/manga/Reincarnated_as_a_Genius_Prodigy_of_a_Prestigious_Family_1_600.jpg",
+      "type": "manhwa",
+      "statut": "en cours",
+      "synopsis": "",
+      "genres": [
+        "Shonen"
+      ],
+      "auteur": "Webtoon 2024 - Cho Hyeonji et Peullaiseu",
+      "note": 0.0,
+      "dernierChapitre": 0,
+      "sourceNom": "Scan-Manga",
+      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
