@@ -152,91 +152,139 @@
 
 <script src="/js/app.js"></script>
 <script>
+/* ── Page d'accueil — alimentée par le catalogue VF (data/catalogue-fr.json + /scans/index.json) ── */
+const PROXY_SOURCES = new Set(['Sushiscan','Raijin-Scans','Crunchyscan']);
+const TINTS = [
+  'oklch(0.46 0.1 28)','oklch(0.44 0.1 285)','oklch(0.45 0.09 205)',
+  'oklch(0.46 0.09 152)','oklch(0.45 0.1 330)','oklch(0.47 0.1 62)',
+  'oklch(0.44 0.09 245)','oklch(0.46 0.09 105)',
+];
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function cardLink(o){
+  if (o.serie) return `/lecteur-fr.html?serie=${encodeURIComponent(o.serie)}`;
+  if (o.lecteurIntegre && o.mangadexId) return `/lecteur-fr.html?id=${o.mangadexId}`;
+  if (PROXY_SOURCES.has(o.sourceNom) && o.url) return `/lecteur-fr.html?src=${encodeURIComponent(o.url)}`;
+  return o.url || '#';
+}
+function statusStyle(st){
+  const s=(st||'').toLowerCase();
+  if (s==='en cours') return {c:'oklch(0.82 0.15 152)',bg:'oklch(0.32 0.07 152 / 0.4)'};
+  if (s==='terminé')  return {c:'oklch(0.78 0.12 232)',bg:'oklch(0.32 0.06 232 / 0.4)'};
+  return {c:'oklch(0.84 0.13 78)',bg:'oklch(0.34 0.06 78 / 0.4)'};
+}
+function isHot(o){ return (o.note>=4.7 && (o.statut||'').toLowerCase()==='en cours') || o.dernierChapitre>150; }
+function gridCard(o,i){
+  const href=cardLink(o), tint=TINTS[i%TINTS.length], ss=statusStyle(o.statut);
+  const hot=isHot(o), type=(o.type||'manga').toUpperCase();
+  const rating=o.note?o.note.toFixed(1):'—', chap=o.dernierChapitre?`Ch. ${o.dernierChapitre}`:'';
+  const isLocal=href.startsWith('/');
+  const rt=o.serie?'scanaddiction':(o.lecteurIntegre&&o.mangadexId)?'mangadex':PROXY_SOURCES.has(o.sourceNom)?'proxy':'external';
+  const td=JSON.stringify({titre:o.titre,sourceNom:o.sourceNom,type:o.type,statut:o.statut,id:o.id});
+  return `<a href="${esc(href)}" ${isLocal?'':'rel="noopener noreferrer" target="_blank"'} class="sa-card"
+    onclick="window.SA_TRACK?.mangaClick(${esc(td)},'${rt}')"
+    style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:11px;border:1px solid oklch(0.27 0.014 270);border-radius:15px;padding:9px;background:oklch(0.195 0.012 270);">
+    <div style="position:relative;border-radius:10px;overflow:hidden;aspect-ratio:3/4.2;">
+      <div class="sa-cover" style="position:absolute;inset:0;background:linear-gradient(155deg,${tint},oklch(0.2 0.02 270));transition:transform .4s cubic-bezier(.2,.7,.3,1);"></div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(125deg,transparent 0 13px,oklch(1 0 0 / 0.04) 13px 14px);"></div>
+      ${o.cover?`<img src="${esc(o.cover)}" alt="${esc(o.titre)}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`:''}
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,oklch(0.12 0.02 270 / 0.92),transparent 55%);"></div>
+      <span style="position:absolute;top:9px;left:9px;padding:3px 9px;border-radius:7px;background:oklch(0.16 0.02 270 / 0.78);backdrop-filter:blur(4px);font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:oklch(0.86 0.04 45);">${type}</span>
+      ${hot?`<span style="position:absolute;top:9px;right:9px;padding:3px 8px;border-radius:7px;background:oklch(0.7 0.18 35);font-size:10.5px;font-weight:700;color:#16181e;">🔥 HOT</span>`:''}
+      <div style="position:absolute;left:11px;right:11px;bottom:10px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+          <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;background:${ss.bg};color:${ss.c};font-size:10.5px;font-weight:700;"><span style="width:5px;height:5px;border-radius:50%;background:${ss.c};"></span>${esc(o.statut||'en cours')}</span>
+          <span style="margin-left:auto;font-size:12px;font-weight:700;color:oklch(0.92 0.06 85);">★ ${rating}</span>
+        </div>
+        <div style="font-family:'Space Grotesk';font-weight:600;font-size:15px;line-height:1.15;letter-spacing:-0.01em;color:#fff;text-shadow:0 2px 8px oklch(0.1 0.02 270 / 0.8);">${esc(o.titre)}</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;padding:0 3px 4px;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:oklch(0.6 0.012 270);">
+        ${chap?`<span>${chap}</span><span style="opacity:.4;">·</span>`:''}
+        <span style="color:oklch(0.72 0.14 292);font-weight:600;">${esc(o.sourceNom||'')}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">
+        ${(o.genres||[]).slice(0,3).map(g=>`<span style="font-size:10.5px;padding:2px 6px;border-radius:5px;background:oklch(0.25 0.015 270);color:oklch(0.7 0.012 270);">${esc(g)}</span>`).join('')}
+      </div>
+    </div>
+  </a>`;
+}
+function listCard(o,i){
+  const href=cardLink(o), tint=TINTS[i%TINTS.length], ss=statusStyle(o.statut);
+  const hot=isHot(o), type=(o.type||'manga').toUpperCase();
+  const rating=o.note?o.note.toFixed(1):'—', chap=o.dernierChapitre?`${o.dernierChapitre} chap.`:'';
+  const isLocal=href.startsWith('/');
+  const rt=o.serie?'scanaddiction':(o.lecteurIntegre&&o.mangadexId)?'mangadex':PROXY_SOURCES.has(o.sourceNom)?'proxy':'external';
+  const td=JSON.stringify({titre:o.titre,sourceNom:o.sourceNom,type:o.type,statut:o.statut,id:o.id});
+  return `<a href="${esc(href)}" ${isLocal?'':'rel="noopener noreferrer" target="_blank"'} class="sa-card"
+    onclick="window.SA_TRACK?.mangaClick(${esc(td)},'${rt}')"
+    style="text-decoration:none;color:inherit;display:flex;gap:16px;align-items:center;border:1px solid oklch(0.27 0.014 270);border-radius:14px;padding:11px;background:oklch(0.195 0.012 270);">
+    <div style="position:relative;width:62px;height:84px;border-radius:9px;overflow:hidden;flex:0 0 auto;">
+      <div style="position:absolute;inset:0;background:linear-gradient(155deg,${tint},oklch(0.2 0.02 270));"></div>
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(125deg,transparent 0 11px,oklch(1 0 0 / 0.04) 11px 12px);"></div>
+      ${o.cover?`<img src="${esc(o.cover)}" alt="${esc(o.titre)}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`:''}
+    </div>
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:5px;">
+        <span style="font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:oklch(0.75 0.11 292);">${type}</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;background:${ss.bg};color:${ss.c};font-size:10.5px;font-weight:700;"><span style="width:5px;height:5px;border-radius:50%;background:${ss.c};"></span>${esc(o.statut||'')}</span>
+        ${hot?'<span style="font-size:11px;">🔥</span>':''}
+      </div>
+      <div style="font-family:'Space Grotesk';font-weight:600;font-size:17px;letter-spacing:-0.01em;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(o.titre)}</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:oklch(0.6 0.012 270);flex-wrap:wrap;">
+        ${(o.genres||[]).slice(0,3).map(g=>esc(g)).join(' · ')}
+        ${chap?`<span style="opacity:.4;">·</span><span>${chap}</span>`:''}
+        <span style="opacity:.4;">·</span><span style="color:oklch(0.72 0.14 292);font-weight:600;">${esc(o.sourceNom||'')}</span>
+      </div>
+    </div>
+    <span style="font-size:15px;font-weight:700;color:oklch(0.92 0.06 85);flex-shrink:0;">★ ${rating}</span>
+  </a>`;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const data = await App.getOeuvres();
-    const oeuvres = data.oeuvres || [];
-    const featured = oeuvres.filter(o => o.featured);
-    const nouveau  = oeuvres.filter(o => o.nouveau);
+    const get=u=>fetch(u).then(r=>r.ok?r.json():null).catch(()=>null);
+    const [data,own]=await Promise.all([get('/data/catalogue-fr.json'),get('/scans/index.json')]);
+    if(!data && !own) throw new Error('no data');
+    const ownList=(own&&own.oeuvres)||[];
+    const ownIds=new Set(ownList.map(o=>o.id));
+    const aggr=((data&&data.oeuvres)||[]).filter(o=>!ownIds.has(o.id));
+    const all=[...ownList,...aggr];
 
-    // Stats
-    const totalCh = oeuvres.reduce((s, o) => s + o.chapitres.length, 0);
-    document.getElementById('stat-oeuvres').textContent   = oeuvres.length;
-    document.getElementById('stat-chapitres').textContent = totalCh;
+    /* Stats */
+    const totalCh=all.reduce((s,o)=>s+(parseInt(o.dernierChapitre)||0),0);
+    const elO=document.getElementById('stat-oeuvres'); if(elO) elO.textContent=all.length.toLocaleString('fr-FR');
+    const elC=document.getElementById('stat-chapitres'); if(elC) elC.textContent=totalCh.toLocaleString('fr-FR');
 
-    // En vedette — grande carte horizontale
-    const featuredGrid = document.getElementById('featured-grid');
-    if (featuredGrid) {
-      featuredGrid.innerHTML = featured.slice(0, 3).map(o => {
-        const lastChap = o.chapitres[o.chapitres.length - 1];
-        return `
-<a href="/oeuvre.html?id=${o.id}" class="group relative rounded-2xl overflow-hidden border border-[#1e1e35] hover:border-purple-800/50 transition-all bg-[#111120] flex flex-col sm:flex-row gap-0">
-  <div class="shrink-0 w-full sm:w-32 bg-[#${o.couleur||'1e1e35'}]">
-    <img src="${o.cover}" alt="${o.titre}" class="w-full h-40 sm:h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
-  </div>
-  <div class="p-4 flex flex-col gap-2 justify-center min-w-0">
-    <div class="flex gap-1.5 flex-wrap">
-      ${App.typeBadge(o.type)}
-      ${App.statutBadge(o.statut)}
-    </div>
-    <p class="font-bold text-slate-100 group-hover:text-white transition-colors line-clamp-1">${o.titre}</p>
-    ${o.titreFr ? `<p class="text-xs text-slate-500">${o.titreFr}</p>` : ''}
-    <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">${o.synopsis.slice(0,120)}…</p>
-    <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
-      <span>${App.starHTML(o.note)} ${o.note}</span>
-      ${lastChap ? `<span>Ch.${lastChap.numero} · ${App.formatDate(lastChap.date)}</span>` : ''}
-    </div>
-  </div>
-</a>`;
-      }).join('') || '<p class="text-slate-500 col-span-full">Aucune œuvre en vedette.</p>';
+    /* En vedette — séries traduites par Scanaddiction d'abord, complétées par les mieux notées */
+    const byNote=[...aggr].sort((a,b)=>(b.note||0)-(a.note||0));
+    const featured=[...ownList];
+    for(const o of byNote){ if(featured.length>=3) break; featured.push(o); }
+    const fg=document.getElementById('featured-grid');
+    if(fg){
+      fg.style.display='grid';
+      fg.style.gridTemplateColumns='repeat(auto-fill,minmax(230px,1fr))';
+      fg.style.gap='20px';
+      fg.innerHTML=featured.slice(0,3).map((o,i)=>gridCard(o,i)).join('')||'<p style="color:oklch(0.6 0.012 270);grid-column:1/-1;">Aucune œuvre pour le moment.</p>';
     }
 
-    // Sorties récentes — liste compacte (tous chapitres récents triés)
-    const latestList = document.getElementById('latest-list');
-    if (latestList) {
-      const entries = [];
-      oeuvres.forEach(o => {
-        o.chapitres.forEach(ch => {
-          entries.push({ o, ch });
-        });
-      });
-      entries.sort((a,b) => b.ch.date.localeCompare(a.ch.date));
-      latestList.innerHTML = entries.slice(0, 8).map(({ o, ch }) => `
-<a href="/lecteur.html?id=${o.id}&ch=${ch.numero}"
-   class="flex items-center gap-4 px-4 py-3 bg-[#111120] hover:bg-[#161628] border border-[#1e1e35] hover:border-purple-800/40 rounded-xl transition-all group">
-  <img src="${o.cover}" alt="${o.titre}" class="w-10 h-14 object-cover rounded-lg border border-[#2a2a45] shrink-0">
-  <div class="flex-1 min-w-0">
-    <p class="font-semibold text-sm text-slate-200 group-hover:text-white truncate">${o.titre}</p>
-    <p class="text-xs text-slate-500">Ch.${ch.numero} · ${ch.titre}</p>
-  </div>
-  <div class="text-right shrink-0">
-    <p class="text-xs text-slate-500">${App.formatDate(ch.date)}</p>
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="ml-auto mt-1 text-slate-600 group-hover:text-purple-400 transition-colors"><path d="M9 18l6-6-6-6"/></svg>
-  </div>
-</a>`).join('');
-    }
+    /* Sorties récentes — tes scans (par date de mise à jour), puis les séries les plus avancées */
+    const ownByDate=[...ownList].sort((a,b)=>String(b.majLe||'').localeCompare(String(a.majLe||'')));
+    const aggrByChap=[...aggr].sort((a,b)=>(b.dernierChapitre||0)-(a.dernierChapitre||0));
+    const latest=[...ownByDate,...aggrByChap].slice(0,8);
+    const ll=document.getElementById('latest-list');
+    if(ll) ll.innerHTML=latest.map((o,i)=>listCard(o,i)).join('');
 
-    // Tout le catalogue (covers)
-    const allCovers = document.getElementById('all-covers');
-    if (allCovers) {
-      allCovers.innerHTML = oeuvres.map(o => `
-<a href="/oeuvre.html?id=${o.id}" class="card-oeuvre group flex flex-col">
-  <div class="relative overflow-hidden" style="aspect-ratio:5/7">
-    <img src="${o.cover}" alt="${o.titre}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-         onerror="this.style.background='#${o.couleur||'1e1e35'}';this.src=''">
-    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-    ${o.nouveau ? '<div class="absolute top-2 left-2 px-1.5 py-0.5 bg-purple-600 text-white text-[10px] font-bold rounded">NOUVEAU</div>' : ''}
-  </div>
-  <div class="p-3">
-    <p class="font-bold text-xs text-slate-100 line-clamp-2 mb-1">${o.titre}</p>
-    <div class="flex gap-1.5">${App.typeBadge(o.type)}${App.statutBadge(o.statut)}</div>
-  </div>
-</a>`).join('');
+    /* Tout le catalogue — aperçu des mieux notés (le reste sur /catalogue) */
+    const preview=[...ownList,...byNote].slice(0,24);
+    const ac=document.getElementById('all-covers');
+    if(ac){
+      ac.style.display='grid';
+      ac.style.gridTemplateColumns='repeat(auto-fill,minmax(150px,1fr))';
+      ac.style.gap='14px';
+      ac.innerHTML=preview.map((o,i)=>gridCard(o,i)).join('');
     }
-
-  } catch(e) {
-    console.error(e);
-  }
+  } catch(e){ console.error('Accueil:',e); }
 });
 </script>
 </body>
