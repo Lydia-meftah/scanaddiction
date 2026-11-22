@@ -70,6 +70,12 @@
     <h1 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(34px,4.4vw,54px);line-height:1.04;letter-spacing:-0.025em;margin:0 0 14px;">Trouve ton prochain<br><span style="color:oklch(0.68 0.21 292);">scan</span> en quelques secondes.</h1>
     <p style="color:oklch(0.66 0.012 270);font-size:16px;max-width:520px;margin:0 auto 30px;">Cherche par titre, filtre par genre, source, statut ou note. Tout est là, clair et rapide.</p>
 
+    <!-- MODE TABS -->
+    <div id="mode-tabs" style="display:flex;justify-content:center;gap:8px;margin:4px auto 2px;flex-wrap:wrap;">
+      <button id="tab-mine" data-mode="mine" style="padding:9px 18px;border-radius:99px;border:1px solid oklch(0.3 0.014 270);background:oklch(0.22 0.013 270);color:oklch(0.74 0.012 270);font-family:'Hanken Grotesk';font-weight:700;font-size:13.5px;cursor:pointer;">✍️ Mes traductions <span id="cnt-mine" style="opacity:.6;font-weight:500;"></span></button>
+      <button id="tab-discover" data-mode="discover" style="padding:9px 18px;border-radius:99px;border:1px solid oklch(0.3 0.014 270);background:oklch(0.22 0.013 270);color:oklch(0.74 0.012 270);font-family:'Hanken Grotesk';font-weight:700;font-size:13.5px;cursor:pointer;">🔎 Découverte <span id="cnt-discover" style="opacity:.6;font-weight:500;"></span></button>
+    </div>
+
     <!-- SEARCH BAR -->
     <div style="max-width:680px;margin:0 auto;position:relative;">
       <div style="position:absolute;left:20px;top:50%;transform:translateY(-50%);color:oklch(0.6 0.012 270);pointer-events:none;font-size:20px;">⌕</div>
@@ -158,6 +164,11 @@
     <div id="active-pills" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 0 2px;"></div>
   </section>
 
+  <!-- MODE BANNER -->
+  <section style="max-width:1280px;margin:0 auto;padding:0 28px;">
+    <div id="mode-banner" style="margin-top:8px;padding:11px 15px;border-radius:12px;font-size:13.5px;display:none;"></div>
+  </section>
+
   <!-- RESULTS -->
   <section style="max-width:1280px;margin:0 auto;padding:24px 28px 80px;">
     <div id="skeleton" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:22px;">
@@ -191,7 +202,7 @@ const SORT_LABELS = {recent:'Plus récent',rating:'Mieux notés',chapters:'Plus 
 const GENRE_LIST = ['Tous','Action','Romance','Fantasy','Isekai','Surnaturel','Drame','Sci-Fi','Horreur','Comédie','Sport','Slice of Life','Aventure','Mystère','Thriller','Harem','School Life'];
 
 /* ── State ───────────────────────────────────────────── */
-const S = {query:'',genre:'Tous',source:'Toutes',statut:'Tous',type:'Tous',minRating:0,sort:'recent',view:'grid',open:null};
+const S = {query:'',genre:'Tous',source:'Toutes',statut:'Tous',type:'Tous',minRating:0,sort:'recent',view:'grid',open:null,mode:'mine'};
 let allOeuvres = [];
 
 /* ── Helpers ─────────────────────────────────────────── */
@@ -212,7 +223,8 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 /* ── Filter ──────────────────────────────────────────── */
 function getFiltered() {
   const q = S.query.trim().toLowerCase();
-  let list = allOeuvres.filter(o => {
+  const base = allOeuvres.filter(o => S.mode==='mine' ? !!o.serie : !o.serie);
+  let list = base.filter(o => {
     if (q && ![o.titre,o.sourceNom,...(o.genres||[])].join(' ').toLowerCase().includes(q)) return false;
     if (S.genre!=='Tous' && !(o.genres||[]).some(g=>g.toLowerCase().includes(S.genre.toLowerCase()))) return false;
     if (S.source!=='Toutes' && o.sourceNom!==S.source) return false;
@@ -321,7 +333,7 @@ function render() {
       listEl.innerHTML = list.map((o,i)=>listCard(o,i)).join('');
     }
   }
-  renderPills(); syncStyles();
+  renderPills(); syncStyles(); renderModeTabs();
 }
 
 /* ── Active pills ────────────────────────────────────── */
@@ -426,8 +438,42 @@ function wire() {
   document.getElementById('btn-list').addEventListener('click',e=>{e.stopPropagation();set('view','list');});
   // Empty clear
   document.getElementById('clear-all-empty').addEventListener('click',clearAll);
+  // Mode tabs (Mes traductions / Découverte)
+  document.getElementById('tab-mine')?.addEventListener('click',e=>{e.stopPropagation();setMode('mine');});
+  document.getElementById('tab-discover')?.addEventListener('click',e=>{e.stopPropagation();setMode('discover');});
   // Outside click
   document.addEventListener('click',()=>closeAll());
+}
+
+/* ── Mode (Mes traductions / Découverte) ─────────────── */
+function setMode(m){ if(S.mode===m) return; S.mode=m; S.open=null; closeAll(); window.SA_TRACK?.filterApply('mode',m); render(); window.scrollTo({top:0,behavior:'smooth'}); }
+function renderModeTabs(){
+  const nMine=allOeuvres.filter(o=>o.serie).length;
+  const nDisc=allOeuvres.length-nMine;
+  const cm=document.getElementById('cnt-mine'); if(cm) cm.textContent=nMine;
+  const cd=document.getElementById('cnt-discover'); if(cd) cd.textContent=nDisc;
+  [['tab-mine','mine'],['tab-discover','discover']].forEach(([id,m])=>{
+    const b=document.getElementById(id); if(!b) return;
+    const on=S.mode===m;
+    b.style.background=on?'linear-gradient(135deg,oklch(0.68 0.21 292),oklch(0.58 0.22 258))':'oklch(0.22 0.013 270)';
+    b.style.color=on?'#fff':'oklch(0.74 0.012 270)';
+    b.style.border='1px solid '+(on?'oklch(0.68 0.21 292)':'oklch(0.3 0.014 270)');
+  });
+  const banner=document.getElementById('mode-banner');
+  if(!banner) return;
+  banner.style.display='block';
+  if(S.mode==='discover'){
+    banner.style.border='1px solid oklch(0.4 0.1 78 / 0.5)';
+    banner.style.background='oklch(0.3 0.06 78 / 0.22)';
+    banner.style.color='oklch(0.86 0.08 78)';
+    banner.innerHTML='🔎 <b>Découverte</b> — ces titres ne sont pas hébergés sur Scanaddiction : le clic ouvre leur <b>site d\'origine</b> dans un nouvel onglet.';
+  } else {
+    banner.style.border='1px solid oklch(0.32 0.07 152 / 0.5)';
+    banner.style.background='oklch(0.28 0.05 152 / 0.18)';
+    banner.style.color='oklch(0.82 0.12 152)';
+    banner.innerHTML='✍️ <b>Mes traductions</b> — lisibles directement ici, sur Scanaddiction.'+(nMine<=3?' <span style="opacity:.85;">Encore peu de titres — <b id="goto-discover" style="cursor:pointer;text-decoration:underline;">explore la Découverte →</b></span>':'');
+    document.getElementById('goto-discover')?.addEventListener('click',()=>setMode('discover'));
+  }
 }
 
 /* ── Init ────────────────────────────────────────────── */
