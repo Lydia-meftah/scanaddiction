@@ -197,9 +197,8 @@ let allOeuvres = [];
 /* ── Helpers ─────────────────────────────────────────── */
 function cardLink(o) {
   if (o.serie) return `/lecteur-fr.html?serie=${encodeURIComponent(o.serie)}`;
-  if (o.lecteurIntegre && o.mangadexId) return `/lecteur-fr.html?id=${o.mangadexId}`;
-  if (PROXY_SOURCES.has(o.sourceNom) && o.url) return `/lecteur-fr.html?src=${encodeURIComponent(o.url)}`;
-  return o.url || '#';
+  // D-001 : pas de republication de contenu tiers -> lien vers la source d'origine (nouvel onglet)
+  return o.url || o.sourceUrl || '#';
 }
 function statusStyle(st) {
   const s = (st||'').toLowerCase();
