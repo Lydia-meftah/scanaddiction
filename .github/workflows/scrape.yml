@@ -1,8 +1,12 @@
 name: 🤖 Mise à jour catalogue
 
 on:
-  schedule:
-    - cron: '0 3 * * *'
+  # Scraping nocturne des sites tiers DÉSACTIVÉ : le catalogue ne doit plus
+  # être alimenté automatiquement par des sources non autorisées. Le code du
+  # scraper est conservé (scraper.py) à des fins d'étude ; il reste lançable
+  # manuellement via « Run workflow » si besoin.
+  #   schedule:
+  #     - cron: '0 3 * * *'
   workflow_dispatch:
 
 jobs:
