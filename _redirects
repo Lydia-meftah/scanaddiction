@@ -4,3 +4,7 @@
 
 /manga /catalogue.html 301
 /lire /catalogue.html 301
+
+# Promotion VF : ancienne URL /catalogue-fr redirigee vers /catalogue
+/catalogue-fr /catalogue 301
+/catalogue-fr.html /catalogue 301
