@@ -1,9 +1,8 @@
 {
-  "lastUpdate": "2026-11-23T11:48:03.680835+00:00",
-  "total": 4972,
+  "lastUpdate": "2026-11-24T13:17:05.278609+00:00",
+  "total": 4947,
   "sources": [
     "MangaDex",
-    "Scan-Manga",
     "Sushiscan"
   ],
   "oeuvres": [
@@ -1750,22 +1749,6 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
-      "lecteurIntegre": false
-    },
-    {
-      "id": "sm-14952",
-      "titre": "A Dragonslayer",
-      "url": "https://www.scan-manga.com/14952/A-Dragonslayer-s-Peerless-Regression.html",
-      "cover": "https://static.scan-manga.com/img/manga/A_Dragonslayer-s_Peerless_Regression_1_4641.jpg",
-      "type": "manga",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
@@ -14542,24 +14525,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-16296-86845",
-      "titre": "Colorist",
-      "url": "https://www.scan-manga.com/16296-86845/Colorist.html",
-      "cover": "https://static.scan-manga.com/img/manga/Colorist_1_1933.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "Webtoon 2025 - 89line",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-colorless",
       "titre": "Colorless",
       "url": "https://sushiscan.net/catalogue/colorless/",
@@ -15993,24 +15958,6 @@
       "sourceNom": "MangaDex",
       "sourceUrl": "https://mangadex.org",
       "lecteurIntegre": true
-    },
-    {
-      "id": "sm-11086-17226",
-      "titre": "Damn Reincarnation",
-      "url": "https://www.scan-manga.com/11086-17226/Damn-Reincarnation.html",
-      "cover": "https://static.scan-manga.com/img/manga/Damn_Reincarnation_1_2350.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
     },
     {
       "id": "ss-damn-reincarnation",
@@ -21045,24 +20992,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-15257-65332",
-      "titre": "Emperor of Solo Play",
-      "url": "https://www.scan-manga.com/15257-65332/Emperor-of-Solo-Play.html",
-      "cover": "https://static.scan-manga.com/img/manga/Emperor_of_Solo_Play_1_5148.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-empire-usa",
       "titre": "Empire Usa",
       "url": "https://sushiscan.net/catalogue/empire-usa/",
@@ -23534,24 +23463,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-14408",
-      "titre": "From Goblin to Goblin God",
-      "url": "https://www.scan-manga.com/14408/From-Goblin-to-Goblin-God.html",
-      "cover": "https://static.scan-manga.com/img/manga/From_Goblin_to_Goblin_God_1_55.jpg",
-      "type": "manhua",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Seinen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-fruits-basket",
       "titre": "Fruits Basket",
       "url": "https://sushiscan.net/catalogue/fruits-basket/",
@@ -25130,24 +25041,6 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
-      "lecteurIntegre": false
-    },
-    {
-      "id": "sm-17155",
-      "titre": "Global Awakening: The Synthesis Master Starts with an Undead Army",
-      "url": "https://www.scan-manga.com/17155/Global-Awakening-The-Synthesis-Master-Starts-with-an-Undead-Army.html",
-      "cover": "https://static.scan-manga.com/img/manga/Global_Awakening_The_Synthesis_Master_Starts_with_an_Undead_Army_1_7120.jpg",
-      "type": "manhua",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "Webtoon 2026 - Wu Kai et A.S.S. Wujinhai",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
@@ -28003,24 +27896,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-16450",
-      "titre": "High-Martial World: One Hand to Overwhelm Three Thousand Emperors!",
-      "url": "https://www.scan-manga.com/16450/High-Martial-World-One-Hand-to-Overwhelm-Three-Thousand-Emperors.html",
-      "cover": "https://static.scan-manga.com/img/manga/High-Martial_World_One_Hand_to_Overwhelm_Three_Thousand_Emperors_1_6419.jpg",
-      "type": "manhua",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "Webtoon 2025 - &#28459;&#21019;&#22530;",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-highschool-of-the-dead",
       "titre": "Highschool Of The Dead",
       "url": "https://sushiscan.net/catalogue/highschool-of-the-dead/",
@@ -30136,24 +30011,6 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
-      "lecteurIntegre": false
-    },
-    {
-      "id": "sm-15698",
-      "titre": "Infinite Evolution Starting from Zero",
-      "url": "https://www.scan-manga.com/15698/Infinite-Evolution-Starting-from-Zero.html",
-      "cover": "https://static.scan-manga.com/img/manga/Infinite_Evolution_Starting_from_Zero_1_7111.jpg",
-      "type": "manhua",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
@@ -42749,24 +42606,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-14951-62431",
-      "titre": "Legendary Hero Is an Academy Honors Student",
-      "url": "https://www.scan-manga.com/14951-62431/Legendary-Hero-Is-an-Academy-Honors-Student.html",
-      "cover": "https://static.scan-manga.com/img/manga/Legendary_Hero_Is_an_Academy_Honors_Student_1_376.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-legendary-love",
       "titre": "Legendary Love",
       "url": "https://sushiscan.net/catalogue/legendary-love/",
@@ -49468,24 +49307,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-15305",
-      "titre": "Martial Evolution: Start by Awakening the King of Monsters",
-      "url": "https://www.scan-manga.com/15305/Martial-Evolution-Start-by-Awakening-the-King-of-Monsters.html",
-      "cover": "https://static.scan-manga.com/img/manga/Martial_Evolution_Start_by_Awakening_the_King_of_Monsters_1_6102.jpg",
-      "type": "manhua",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "Webtoon 2025 - Liang Tao Jin Manhua",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-marvel-2-in-one",
       "titre": "Marvel 2 In One",
       "url": "https://sushiscan.net/catalogue/marvel-2-in-one/",
@@ -52368,24 +52189,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-7676-38512",
-      "titre": "Murim Login",
-      "url": "https://www.scan-manga.com/7676-38512/Murim-Login.html",
-      "cover": "https://static.scan-manga.com/img/manga/Murim_Login_1_4830.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Seinen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-musashi",
       "titre": "Musashi",
       "url": "https://sushiscan.net/catalogue/musashi/",
@@ -53699,22 +53502,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-13018-39112",
-      "titre": "Necromancer",
-      "url": "https://www.scan-manga.com/13018-39112/Necromancer-s-Evolutionary-Traits.html",
-      "cover": "https://static.scan-manga.com/img/manga/Necromancer-s_Evolutionary_Traits_1_9492.jpg",
-      "type": "manga",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-necromancer",
       "titre": "Necromancer",
       "url": "https://sushiscan.net/catalogue/necromancer/",
@@ -53728,24 +53515,6 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
-      "lecteurIntegre": false
-    },
-    {
-      "id": "sm-13429-46470",
-      "titre": "Necromancer Academy and the Genius Summoner",
-      "url": "https://www.scan-manga.com/13429-46470/Necromancer-Academy-and-the-Genius-Summoner.html",
-      "cover": "https://static.scan-manga.com/img/manga/Necromancer_Academy_and_the_Genius_Summoner_1_52.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
@@ -56706,7 +56475,7 @@
       "mangadexId": "1fc3d326-c037-43fa-8953-ed52a56caa18",
       "titre": "Osoraku Kanojo wa Ore no Aniki o Neratteru",
       "url": "https://mangadex.org/title/1fc3d326-c037-43fa-8953-ed52a56caa18",
-      "cover": "https://uploads.mangadex.org/covers/1fc3d326-c037-43fa-8953-ed52a56caa18/e71fb7db-92f6-4316-87dd-3f523db91bca.jpg.512.jpg",
+      "cover": "https://uploads.mangadex.org/covers/1fc3d326-c037-43fa-8953-ed52a56caa18/6b720dc9-f6e3-4a6d-bd51-f5c822b592e7.jpg.512.jpg",
       "type": "manga",
       "statut": "en cours",
       "synopsis": "A high school guy who doesn't trust girls anymore has been tricked too many times by girls who just wanted to get close to his good-looking older brother. After all that, he decides he'll never trust a girl again. But then, a pretty girl in his class suddenly starts talking to him a lot. Is she just trying to get to his brother too...? Or does she actually mean something else?",
@@ -60317,24 +60086,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-14713-14251",
-      "titre": "Reincarnated as a Genius Prodigy of a Prestigious Family",
-      "url": "https://www.scan-manga.com/14713-14251/Reincarnated-as-a-Genius-Prodigy-of-a-Prestigious-Family.html",
-      "cover": "https://static.scan-manga.com/img/manga/Reincarnated_as_a_Genius_Prodigy_of_a_Prestigious_Family_1_600.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "Webtoon 2024 - Cho Hyeonji et Peullaiseu",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "mdx-d3731564-c453-4486-b24e-567a3ad3bc2e",
       "mangadexId": "d3731564-c453-4486-b24e-567a3ad3bc2e",
       "titre": "Reincarnated as the Piggy Duke: This Time I'm Gonna Tell Her How I Feel!",
@@ -60660,24 +60411,6 @@
       "sourceNom": "MangaDex",
       "sourceUrl": "https://mangadex.org",
       "lecteurIntegre": true
-    },
-    {
-      "id": "sm-16478",
-      "titre": "Return of the First Patriarch: The Strongest Reincarnates into His Descendant 1000 Years Later",
-      "url": "https://www.scan-manga.com/16478/Return-of-the-First-Patriarch-The-Strongest-Reincarnates-into-His-Descendant-1000-Years-Later.html",
-      "cover": "https://static.scan-manga.com/img/manga/Return_of_the_First_Patriarch_The_Strongest_Reincarnates_into_His_Descendant_1000_Years_Later_1_9723.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Seinen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
     },
     {
       "id": "ss-return-of-the-sss-class-ranker",
@@ -62781,24 +62514,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-16728",
-      "titre": "Sand Mage of the Burnt Desert",
-      "url": "https://www.scan-manga.com/16728/Sand-Mage-of-the-Burnt-Desert.html",
-      "cover": "https://static.scan-manga.com/img/manga/Sand_Mage_of_the_Burnt_Desert_1_4029.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-sanda",
       "titre": "Sanda",
       "url": "https://sushiscan.net/catalogue/sanda/",
@@ -63586,7 +63301,7 @@
       "url": "https://mangadex.org/title/1ffca916-3ad7-46d2-9591-a9b39e639971",
       "cover": "https://uploads.mangadex.org/covers/1ffca916-3ad7-46d2-9591-a9b39e639971/60aef1af-2df0-46aa-8270-e1ad9d287289.jpg.512.jpg",
       "type": "manhwa",
-      "statut": "pause",
+      "statut": "en cours",
       "synopsis": "Yeon-woo avait un frère jumeau qui a disparu il y a cinq ans. Un jour, une montre de poche laissée par son frère est retournée en sa possession. À l'intérieur, il a trouvé un journal intime caché dans lequel on pouvait lire : \"Le temps que tu entendes ceci, je serai déjà mort…\". l'Obélisque, la Tour du Dieu Soleil, un monde où plusieurs univers et dimensions se croisent. Dans ce monde, son frère avait été victime d'une trahison en montant la tour. Après avoir appris la vérité, Yeon-woo décida d'escalader la tour avec le journal de son frère. Yeon-woo passe ensuite par les mêmes épreuves que so",
       "genres": [
         "Action",
@@ -64814,7 +64529,7 @@
       "mangadexId": "7991e715-40ae-4c3e-b0e0-aa8bee90ece7",
       "titre": "Shachou to Sake to Hoshi",
       "url": "https://mangadex.org/title/7991e715-40ae-4c3e-b0e0-aa8bee90ece7",
-      "cover": "https://uploads.mangadex.org/covers/7991e715-40ae-4c3e-b0e0-aa8bee90ece7/0e193f95-bfb7-4862-a493-41331816f169.jpg.512.jpg",
+      "cover": "https://uploads.mangadex.org/covers/7991e715-40ae-4c3e-b0e0-aa8bee90ece7/c74183fa-aaa3-4009-9ca0-2532b7d84652.jpg.512.jpg",
       "type": "manga",
       "statut": "en cours",
       "synopsis": "Reina Izutsu, 24 ans, vient de reprendre la direction de l’imprimerie familiale après la disparition soudaine de son père. Mais endosser ce rôle n’a rien d’évident… et ses employés en font les frais. Kenichi Ishizumi, 37 ans, chef de service discret et loyal, s’inquiète pour elle. Un soir, il la croise par hasard dans un parc. Ivre et à bout de nerfs, Reina explose : “J’en peux plus ! J’arrête d’être présidente !” Sans même réaliser qu’elle parle à un de ses subordonnés, elle se livre entièrement… Sous les étoiles, une promesse silencieuse naît. Kenichi décide de la soutenir, peu importe ce qu",
@@ -64844,24 +64559,6 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
-      "lecteurIntegre": false
-    },
-    {
-      "id": "sm-17015",
-      "titre": "Shadow Slave",
-      "url": "https://www.scan-manga.com/17015/Shadow-Slave.html",
-      "cover": "https://static.scan-manga.com/img/manga/Shadow_Slave_1_1155.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Seinen"
-      ],
-      "auteur": "Webtoon 2026 - Guiltythree",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
@@ -65237,7 +64934,7 @@
       "mangadexId": "dd13dad6-7cda-46cf-8d4f-13adfc6c37d6",
       "titre": "Shihai Shoujo Kubaru-chan",
       "url": "https://mangadex.org/title/dd13dad6-7cda-46cf-8d4f-13adfc6c37d6",
-      "cover": "https://uploads.mangadex.org/covers/dd13dad6-7cda-46cf-8d4f-13adfc6c37d6/50014471-db16-401e-9f4d-05eb8ee0aedb.jpg.512.jpg",
+      "cover": "https://uploads.mangadex.org/covers/dd13dad6-7cda-46cf-8d4f-13adfc6c37d6/e9bcd8e9-45c6-4e2b-9191-deb9e86c873b.jpg.512.jpg",
       "type": "manga",
       "statut": "terminé",
       "synopsis": "After fierce bullying, Yuuto Kiba wanted to die. On the verge of committing suicide, his fate changes rapidly when a strange and funky beautiful girl, Kubaru, tells him, “Give me your life”. Make your life happy with love?! A slightly strange and psycho love drama.",
@@ -67174,24 +66871,6 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
-      "lecteurIntegre": false
-    },
-    {
-      "id": "sm-17291",
-      "titre": "Solo Swordmaster",
-      "url": "https://www.scan-manga.com/17291/Solo-Swordmaster.html",
-      "cover": "https://static.scan-manga.com/img/manga/Solo_Swordmaster_1_9056.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
@@ -70685,24 +70364,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-14725-08138",
-      "titre": "Surviving as a Genius on Borrowed Time",
-      "url": "https://www.scan-manga.com/14725-08138/Surviving-as-a-Genius-on-Borrowed-Time.html",
-      "cover": "https://static.scan-manga.com/img/manga/Surviving_as_a_Genius_on_Borrowed_Time_1_5759.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-survivre-a-ses-parents-toxiques",
       "titre": "Survivre A Ses Parents Toxiques",
       "url": "https://sushiscan.net/catalogue/survivre-a-ses-parents-toxiques/",
@@ -70908,22 +70569,6 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
-      "lecteurIntegre": false
-    },
-    {
-      "id": "sm-10834-12372",
-      "titre": "Swordmaster",
-      "url": "https://www.scan-manga.com/10834-12372/Swordmaster-s-Youngest-Son.html",
-      "cover": "https://static.scan-manga.com/img/manga/Swordmaster-s_Youngest_Son_1_4714.jpg",
-      "type": "manga",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
@@ -73248,24 +72893,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-16771",
-      "titre": "The Forgotten Field",
-      "url": "https://www.scan-manga.com/16771/The-Forgotten-Field.html",
-      "cover": "https://static.scan-manga.com/img/manga/The_Forgotten_Field_1_4044.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Josei"
-      ],
-      "auteur": "Soo-ji Kim et Spoon",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-the-gentlemens-alliance-cross",
       "titre": "The Gentlemens Alliance Cross",
       "url": "https://sushiscan.net/catalogue/the-gentlemens-alliance-cross/",
@@ -73479,24 +73106,6 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
-      "lecteurIntegre": false
-    },
-    {
-      "id": "sm-14142-82839",
-      "titre": "The Indomitable Martial King",
-      "url": "https://www.scan-manga.com/14142-82839/The-Indomitable-Martial-King.html",
-      "cover": "https://static.scan-manga.com/img/manga/The_Indomitable_Martial_King_1_7748.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "Studio Redice et Kyung-Il Yang et Lim Kyung-bae",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
@@ -74313,24 +73922,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "sm-17059",
-      "titre": "The Sword Saint Reincarnated Into a Noble Mage Family",
-      "url": "https://www.scan-manga.com/17059/The-Sword-Saint-Reincarnated-Into-a-Noble-Mage-Family.html",
-      "cover": "https://static.scan-manga.com/img/manga/The_Sword_Saint_Reincarnated_Into_a_Noble_Mage_Family_1_1311.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "Webtoon 2026 - Otoufu et Beast Station",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
-      "lecteurIntegre": false
-    },
-    {
       "id": "ss-the-swordsman",
       "titre": "The Swordsman",
       "url": "https://sushiscan.net/catalogue/the-swordsman/",
@@ -74467,24 +74058,6 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
-      "lecteurIntegre": false
-    },
-    {
-      "id": "sm-17191",
-      "titre": "The Unlimited Bacteriomancer",
-      "url": "https://www.scan-manga.com/17191/The-Unlimited-Bacteriomancer.html",
-      "cover": "https://static.scan-manga.com/img/manga/The_Unlimited_Bacteriomancer_1_7183.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
@@ -78645,24 +78218,6 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
-      "lecteurIntegre": false
-    },
-    {
-      "id": "sm-15407",
-      "titre": "Unrivaled Spear Ghost",
-      "url": "https://www.scan-manga.com/15407/Unrivaled-Spear-Ghost.html",
-      "cover": "https://static.scan-manga.com/img/manga/Unrivaled_Spear_Ghost_1_3896.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Seinen"
-      ],
-      "auteur": "",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
