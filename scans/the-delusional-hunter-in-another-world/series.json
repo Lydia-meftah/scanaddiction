@@ -402,6 +402,21 @@
    ]
   },
   {
+   "num": "25",
+   "titre": "",
+   "date": "2026-11-25T19:39:45Z",
+   "pages": [
+    "001.webp",
+    "002.webp",
+    "003.webp",
+    "004.webp",
+    "005.webp",
+    "006.webp",
+    "007.webp",
+    "008.webp"
+   ]
+  },
+  {
    "num": "27",
    "titre": "",
    "date": "2026-11-25T19:30:08Z",
@@ -938,6 +953,6 @@
  "type": "manhwa",
  "synopsis": "Read Chapter 0 of The Delusional Hunter in Another World online for free: 9 high-quality pages and new chapters every day.",
  "cover": "cover.webp",
- "majLe": "2026-11-25T19:30:08Z",
+ "majLe": "2026-11-25T19:39:45Z",
  "statut": "en cours"
 }
