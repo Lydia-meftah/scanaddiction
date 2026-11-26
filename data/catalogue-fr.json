@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2026-11-25T12:07:26.323484+00:00",
+  "lastUpdate": "2026-11-26T11:53:51.148958+00:00",
   "total": 4972,
   "sources": [
     "MangaDex",
@@ -11773,7 +11773,7 @@
       "mangadexId": "30196491-8fc2-4961-8886-a58f898b1b3e",
       "titre": "Boushoku no Berserk: Ore dake Level to Iu Gainen o Toppa Suru",
       "url": "https://mangadex.org/title/30196491-8fc2-4961-8886-a58f898b1b3e",
-      "cover": "https://uploads.mangadex.org/covers/30196491-8fc2-4961-8886-a58f898b1b3e/1790f17f-9184-4a48-8928-c45de48b778e.jpg.512.jpg",
+      "cover": "https://uploads.mangadex.org/covers/30196491-8fc2-4961-8886-a58f898b1b3e/b2eada4d-4311-4b3d-ab23-cc3bcbaa1c67.jpg.512.jpg",
       "type": "manga",
       "statut": "en cours",
       "synopsis": "Dans ce monde, il y a deux types de personnes. Ceux qui ont un ou plusieurs \"talents\", et ceux qui n'en possèdent pas. Les personnes nées avec de puissant talents, exterminent les monstres pour monter en niveaux et devenir puissants, alors que ceux qui n'en possèdent pas deviennent des échecs et sont traités durement par la société. Nous suivons l'histoire de Fate, un homme travaillant comme garde aux portes de la ville et dont son seul talents est la gourmandise, un talent qui ne fait que lui donner faim. ---",
@@ -31721,27 +31721,6 @@
       "lecteurIntegre": false
     },
     {
-      "id": "mdx-baed25ca-569e-4461-bb31-b64883b39d99",
-      "mangadexId": "baed25ca-569e-4461-bb31-b64883b39d99",
-      "titre": "Izuki-kun wa Tadasaretai",
-      "url": "https://mangadex.org/title/baed25ca-569e-4461-bb31-b64883b39d99",
-      "cover": "https://uploads.mangadex.org/covers/baed25ca-569e-4461-bb31-b64883b39d99/edbf6261-c296-454a-894d-66e0815d2676.jpg.512.jpg",
-      "type": "manga",
-      "statut": "terminé",
-      "synopsis": "Itsuki-kun has someone he’s interested in — a senior, Ririko-senpai, the president of the disciplinary committee! In his efforts to talk to her, he purposely messes up his uniform, but Ririko is always one step ahead—?! A heartwarming, dedicated youth romantic comedy begins!",
-      "genres": [
-        "Romance",
-        "Comedy",
-        "Slice of Life"
-      ],
-      "auteur": "Hachida Eku",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "MangaDex",
-      "sourceUrl": "https://mangadex.org",
-      "lecteurIntegre": true
-    },
-    {
       "id": "mdx-52ab10b8-d539-4839-9b31-7937fb08c813",
       "mangadexId": "52ab10b8-d539-4839-9b31-7937fb08c813",
       "titre": "J'aime Amy",
@@ -48533,6 +48512,29 @@
       "lecteurIntegre": false
     },
     {
+      "id": "mdx-bfed99f9-0f35-4173-bc04-f625d340d3f7",
+      "mangadexId": "bfed99f9-0f35-4173-bc04-f625d340d3f7",
+      "titre": "Majo to Kyurasu",
+      "url": "https://mangadex.org/title/bfed99f9-0f35-4173-bc04-f625d340d3f7",
+      "cover": "https://uploads.mangadex.org/covers/bfed99f9-0f35-4173-bc04-f625d340d3f7/5994f752-bd86-4070-8202-e5dae7bd425f.jpg.512.jpg",
+      "type": "manga",
+      "statut": "en cours",
+      "synopsis": "Long ago, the talented witch Shien hid her apprentice Tama from the witch hunts and then disappeared. Hundreds of years later, the two finally reunite in modern-day Japan! However, Shien is no longer the same; a \"downer witch\" is sitting by the window, smoking a cigarette...!",
+      "genres": [
+        "Comedy",
+        "Girls' Love",
+        "Drama",
+        "Fantasy",
+        "Slice of Life"
+      ],
+      "auteur": "Shibata Kouhei",
+      "note": 0.0,
+      "dernierChapitre": 0,
+      "sourceNom": "MangaDex",
+      "sourceUrl": "https://mangadex.org",
+      "lecteurIntegre": true
+    },
+    {
       "id": "mdx-a220cb1c-cec6-42c1-b038-bf1ef64190d8",
       "mangadexId": "a220cb1c-cec6-42c1-b038-bf1ef64190d8",
       "titre": "Majutsu Gakuin wo Shuseki de Sotsugyou Shita Ore ga Boukensha wo Hajimeru no wa Sonna ni Okashii Darou ka",
@@ -60314,24 +60316,6 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
-      "lecteurIntegre": false
-    },
-    {
-      "id": "sm-14713-14251",
-      "titre": "Reincarnated as a Genius Prodigy of a Prestigious Family",
-      "url": "https://www.scan-manga.com/14713-14251/Reincarnated-as-a-Genius-Prodigy-of-a-Prestigious-Family.html",
-      "cover": "https://static.scan-manga.com/img/manga/Reincarnated_as_a_Genius_Prodigy_of_a_Prestigious_Family_1_600.jpg",
-      "type": "manhwa",
-      "statut": "en cours",
-      "synopsis": "",
-      "genres": [
-        "Shonen"
-      ],
-      "auteur": "Webtoon 2024 - Cho Hyeonji et Peullaiseu",
-      "note": 0.0,
-      "dernierChapitre": 0,
-      "sourceNom": "Scan-Manga",
-      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
@@ -73327,6 +73311,24 @@
       "dernierChapitre": 0,
       "sourceNom": "Sushiscan",
       "sourceUrl": "https://sushiscan.net",
+      "lecteurIntegre": false
+    },
+    {
+      "id": "sm-13170-91398",
+      "titre": "The God of War Who Regressed to Level 2",
+      "url": "https://www.scan-manga.com/13170-91398/The-God-of-War-Who-Regressed-to-Level-2.html",
+      "cover": "https://static.scan-manga.com/img/manga/The_God_of_War_Who_Regressed_to_Level_2_1_3030.jpg",
+      "type": "manhwa",
+      "statut": "en cours",
+      "synopsis": "",
+      "genres": [
+        "Shonen"
+      ],
+      "auteur": "Webtoon 2023 - Yeom-Bi et Yoon-Gu Lee",
+      "note": 0.0,
+      "dernierChapitre": 0,
+      "sourceNom": "Scan-Manga",
+      "sourceUrl": "https://www.scan-manga.com",
       "lecteurIntegre": false
     },
     {
