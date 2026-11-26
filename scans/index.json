@@ -1,10 +1,28 @@
 {
- "lastUpdate": "2026-11-26T22:46:14Z",
- "total": 1,
+ "lastUpdate": "2026-11-26T23:09:13Z",
+ "total": 2,
  "sources": [
   "Scanaddiction"
  ],
  "oeuvres": [
+  {
+   "id": "sa-read-the-delusional-hunter-in-another-world",
+   "serie": "read-the-delusional-hunter-in-another-world",
+   "titre": "Read The Delusional Hunter in Another World",
+   "url": "https://scanaddiction-pages.pages.dev/lecteur-fr.html?serie=read-the-delusional-hunter-in-another-world",
+   "cover": "/scans/read-the-delusional-hunter-in-another-world/cover.webp",
+   "type": "manhwa",
+   "statut": "en cours",
+   "synopsis": "Read Chapter 40 of The Delusional Hunter in Another World online for free: 16 high-quality pages and new chapters every day.",
+   "genres": [],
+   "auteur": "",
+   "note": 0,
+   "dernierChapitre": 40,
+   "sourceNom": "Scanaddiction",
+   "sourceUrl": "https://scanaddiction-pages.pages.dev",
+   "lecteurIntegre": true,
+   "majLe": "2026-11-26T23:09:13Z"
+  },
   {
    "id": "sa-the-delusional-hunter-in-another-world",
    "serie": "the-delusional-hunter-in-another-world",
